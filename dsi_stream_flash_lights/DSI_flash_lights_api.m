@@ -8,7 +8,7 @@ fclose(t); %just in case it was open from a previous iteration
 fopen(t); %opens the TCPIP connection
 
 % Open text file for writing data
-textFile = fopen('eegData.csv', 'w');
+textFile = fopen('eegData.csv', 'a');
 
 %% Creating events
 % An event will be either flashing lights or a sound
@@ -30,8 +30,14 @@ headerStart = [64, 65, 66, 67, 68]; % All DSI packet headers begin with '@ABCD',
 cutoffcounter = 0;
 notDone = 1;
 
+num_flashes = 0;
+
 while notDone
     %% Termination clause
+    if num_flashes > 10
+        notDone = 0;
+        disp("Done!!!")
+    end
     if t.Bytesavailable < 12                %if there's not even enough data available to read the header
         cutoffcounter = cutoffcounter + 1;  %take a step towards terminating the whole thing
         if cutoffcounter == 1500            %and if 1500 steps go by without any new data,
@@ -80,6 +86,7 @@ while notDone
                 activity_state = activity_states.quiet;
             elseif activity_state == activity_states.quiet
                 if time_passed > 4
+                    num_flashes = num_flashes + 1;
                     activity_state = activity_states.active;
                     activity_start_time = clock;
                     last_time_color_changed = activity_start_time;
@@ -113,7 +120,7 @@ while notDone
             %% Write data to text file
             fmtSpec = repmat('%f,', 1, 7);
             
-            fprintf(textFile, '%f,', time_passed);
+            % fprintf(textFile, '%f,', time_passed);
             fprintf(textFile, '%f,', Timestamp);
             
             fprintf(textFile, fmtSpec, EEGdata);
