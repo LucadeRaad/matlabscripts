@@ -32,18 +32,28 @@ notDone = 1;
 
 num_flashes = 0;
 
+%% A bunch of constants
+% These constants are set up so that a future user can change them for
+% their needs.
+MAX_FLASHES = 10;
+MAX_PACKETS_DROPPED = 1500;
+QUIET_TIME = 4; % Number of seconds between starting an action.
+ACTIVE_TIME = 1; % Number of seconds the action takes. Should always be smaller than quiet time.
+CHANGE_THRESHOLD = 100; % Number of milliseconds until there is a change in the action state
+
+
 while notDone
     %% Termination clause
-    if num_flashes > 10
+    if num_flashes > MAX_FLASHES
         notDone = 0;
         disp("Done!!!")
     end
-    if t.Bytesavailable < 12                %if there's not even enough data available to read the header
-        cutoffcounter = cutoffcounter + 1;  %take a step towards terminating the whole thing
-        if cutoffcounter == 1500            %and if 1500 steps go by without any new data,
-            notDone = 0;                    %terminate the loop.
+    if t.Bytesavailable < 12                     %if there's not even enough data available to read the header
+        cutoffcounter = cutoffcounter + 1;       %take a step towards terminating the whole thing
+        if cutoffcounter == MAX_PACKETS_DROPPED  %and if 1500 steps go by without any new data,
+            notDone = 0;                         %terminate the loop.
         end
-        disp('no bytes available')
+        disp('no bytes available') % Load bearing disp(). If removed increase the pause time
         pause(0.001)
         continue
     else  %meaning, unless there's data available.
@@ -85,7 +95,7 @@ while notDone
                 activity_start_time = clock;
                 activity_state = activity_states.quiet;
             elseif activity_state == activity_states.quiet
-                if time_passed > 4
+                if time_passed > QUIET_TIME
                     num_flashes = num_flashes + 1;
                     activity_state = activity_states.active;
                     activity_start_time = clock;
@@ -94,7 +104,7 @@ while notDone
                     comment = '1, start of action';
                 end
             elseif activity_state == activity_states.active
-                if time_passed > 1
+                if time_passed > ACTIVE_TIME
                     rectangle("FaceColor", 'k')  % Reset the automata
                     activity_state = activity_states.quiet;
                     activity_start_time = clock;
@@ -109,11 +119,8 @@ while notDone
                 milliseconds_since_color_changed = milliseconds_since_color_changed(6:6) * 1000000;
                 milliseconds_since_color_changed = time2num(milliseconds_since_color_changed);
 
-                if (milliseconds_since_color_changed > 100)
-                    disp("CHANGING COLORS");
-                    last_color = mod(last_color, colors_size) + 1;
-                    rectangle("FaceColor", colors(last_color));
-                    last_time_color_changed = clock;
+                if (milliseconds_since_color_changed > CHANGE_THRESHOLD)
+                    [last_time_color_changed, last_color] = action(last_color, colors, colors_size);
                 end
             end
 
