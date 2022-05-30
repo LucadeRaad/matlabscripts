@@ -1,3 +1,5 @@
+% Maryam messed with this
+
 clc;
 clear;
 close all;
@@ -8,15 +10,26 @@ fclose(t); %just in case it was open from a previous iteration
 fopen(t); %opens the TCPIP connection
 
 % Open text file for writing data
-textFile = fopen('eegData.csv', 'a');
+% Make new file if one already exists
+fileName = 'eegData0.csv';
+i = 0;
+while (exist(fileName, 'file') == 2)
+    fileName = strrep(fileName, int2str(i), int2str(i+1));
+    i = i+1;
+end
+
+textFile = fopen(fileName, 'a'); 
+% 'a' creates and opens a new file or opens a preexisting file to append to
 
 %% Creating events
 % An event will be either flashing lights or a sound
-f = figure;
-rectangle('FaceColor', [0 0 0])
+%f = figure;
+f = figure('WindowState', 'maximized', 'Color', 'black'); % Full-screen figure
+rectangle('FaceColor', [0 0 0]) % [0, 0, 0] is black
 
 colors = get_color_array();
 [~, colors_size] = size(colors);
+% ~ 
 
 activity_state = activity_states.none;
 
@@ -80,7 +93,7 @@ while notDone
 
             EEGdata = EEGdata(1:7);
 
-            %% Actions are an FSA
+            %% Actions are an FSA (Fourier Spectral Analysis)
             % The comment is added at the end of a timestamp
             comment = '';
 
@@ -105,7 +118,7 @@ while notDone
                 end
             elseif activity_state == activity_states.active
                 if time_passed > ACTIVE_TIME
-                    rectangle("FaceColor", 'k')  % Reset the automata
+                    rectangle("FaceColor", 'k')  % Reset the automata ('k' == black)
                     activity_state = activity_states.quiet;
                     activity_start_time = clock;
                     comment = '2, end of action';
@@ -120,6 +133,7 @@ while notDone
                 milliseconds_since_color_changed = time2num(milliseconds_since_color_changed);
 
                 if (milliseconds_since_color_changed > CHANGE_THRESHOLD)
+                    % disp("CHANGING COLORS"); 
                     [last_time_color_changed, last_color] = action(last_color, colors, colors_size);
                 end
             end
