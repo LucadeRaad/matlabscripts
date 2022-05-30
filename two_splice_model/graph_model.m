@@ -7,7 +7,7 @@ function output = graph_model(KNN, path, title)
 
     data(:,end:end) = [];
 
-    fig = figure("Name", 'nice title');
+    fig = figure("Name", title);
     stackedplot(data);
     
     output = fig;
