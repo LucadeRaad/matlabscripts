@@ -1,4 +1,4 @@
-function action = get_full_data(file)
+function [action, between_action] = get_full_data(file)
 %GET_FULL_DATA Summary of this function goes here
 %   Detailed explanation goes here
     Data = clean_data(file);
@@ -13,10 +13,10 @@ function action = get_full_data(file)
     % session
     indexes_of_actions = find(comments);
     
-    action_sessions = get_actions(Data, indexes_of_actions);
+    action = get_actions(Data, indexes_of_actions);
     
     % Normalize the data so it can be compared, put on a graph etc.
-    action = normalize(action_sessions);
+    action = normalize(action);
 end
 
 function session_output = get_actions(data, data_indexes)
