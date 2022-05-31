@@ -19,7 +19,7 @@ Any buffer/delay can cause data to get out of sync. To fix this make sure your c
 
 ### To Test
 
-To test the stream (if you are making modifications, it won't create any new data) do the following:
+To test the stream (if you are making modifications to the code and want to test, it won't create any new data) do the following:
 1. Click on TCP IP
 2. Click on Activate TCP/IP Socket
 3. Then click on Start
