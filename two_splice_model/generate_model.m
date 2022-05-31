@@ -19,4 +19,6 @@ between_action_class = generate_labels(between_action_data, 'between action');
 X = [action_data; between_action_data];
 Y = [action_class; between_action_class];
 
-% model = fitcsvm(X, Y);
+load('model.mat', 'FineGaussianSVM')
+
+graph_model(FineGaussianSVM, "../light_comment_start_end/eegData.csv", "test")

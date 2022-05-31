@@ -1,7 +1,7 @@
-function output = graph_model(KNN, path, title)
+function output = graph_model(model, path, title)
     data = clean_data(path);
 
-    [~, score] = predict(KNN, data);
+    [~, score] = model.predictFcn(data);
 
     data = [data score];
 
