@@ -1,4 +1,4 @@
-function [action, between_action] = get_full_data(file)
+function [between_action, action] = get_full_data(file)
 %GET_FULL_DATA Summary of this function goes here
 %   Detailed explanation goes here
     Data = clean_data(file);
@@ -6,47 +6,73 @@ function [action, between_action] = get_full_data(file)
     % Readtable doesnt work
     comments = readmatrix(file);
 
-    comments = comments(:,13);
+    comments = comments(:,9);
     
     % Note that this will clump all actions into one, which means this code
     % will need to be modified if you want to have multiple stimuli in one
     % session
-    indexes_of_actions = find(comments);
-    
-    action = get_actions(Data, indexes_of_actions);
-    
-    % Normalize the data so it can be compared, put on a graph etc.
-    action = normalize(action);
+    indexes_of_action_start = find(comments == 1);
+
+    indexes_of_action_end = find(comments == 2);
+
+    [start_length, ~] = size(indexes_of_action_start);
+    [end_length, ~] = size(indexes_of_action_end);
+
+    assert (start_length == end_length, ...
+            'There are an unqeual amount of start(%f.0) and end indexes(%f.0)', ...
+            start_length, end_length)
+
+    [action, between_action] = get_actions(Data, indexes_of_action_start, indexes_of_action_end);
 end
 
-function session_output = get_actions(data, data_indexes)
-    snippet_size = get_snippet_size();
+function [action_data, between_action_data] = get_actions(data, indexes_of_action_start, indexes_of_action_end)
+    [length, ~] = size(indexes_of_action_start);
 
-    % If a snippet is too close to the beginning we don't want to use it
-    % this can result in losing a data point
-    if data_indexes(1,:) < snippet_size
-        data_indexes(1,:) = [];
+    data_offset = 1;
+    
+    action_length = 0;
+    between_action_length = 0;
+
+    % This gets the total length of splices plus how much big the final
+    % data matrixes will get
+    for i = 1:length
+        start_index = indexes_of_action_start(i,:);
+        end_index = indexes_of_action_end(i,:);
+
+        assert(start_index < end_index, 'start index is ahead of end index %f.0', i)
+
+        action_length = action_length + end_index - start_index;
+
+        between_action_length = between_action_length + start_index - data_offset - 1;
+
+        data_offset = end_index;
     end
 
-    [length, ~] = size(data_indexes);
+    data_offset = 1;
+    action_offset = 1;
+    between_action_offset = 1;
 
     % We create a session of the size we want so that matlab doesn't have
-    % to deal with creating many matrixes all the time
-    session = zeros([length * snippet_size * 2, 7]);
+    % to deal with inefficient memory allocation
+    action_data = zeros([action_length, 7]);
+
+    between_action_data = zeros([between_action_length, 7]);
     
     for i = 1:length
-        n = data_indexes(i,:);
+        start_index = indexes_of_action_start(i,:);
+        end_index = indexes_of_action_end(i,:);
 
-        snippet = data(n - snippet_size : n + snippet_size - 1,:);
+        action_length = end_index - start_index;
+        action_data(action_offset:action_offset + action_length,:) = data(start_index:end_index,:);
 
-        session_offset_start = ((snippet_size * 2) * (i - 1)) + 1;
-        session_offset_end = session_offset_start + (snippet_size * 2) - 1;
+        action_offset = action_offset + action_length;
 
-        session(session_offset_start:session_offset_end,:) = snippet;
+        between_action_length = start_index - data_offset - 1;
 
-%         figure
-%         stackedplot(snippet);
+        between_action_data(between_action_offset:between_action_offset + between_action_length,:) = data(data_offset:start_index - 1,:);
+        
+        between_action_offset = between_action_offset + between_action_length;
+
+        data_offset = data_offset + action_length + between_action_length;
     end
-
-    session_output = session;
 end

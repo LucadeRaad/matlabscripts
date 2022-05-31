@@ -16,11 +16,7 @@ action_class = generate_labels(action_data, 'flashing lights');
 between_action_class = generate_labels(between_action_data, 'between action');
 
 
-X = [];
-Y = [];
+X = [action_data; between_action_data];
+Y = [action_class; between_action_class];
 
-model = fitcknn(X, Y);
-
-error_rate = loss(model, ,);
-
-accuracy = 1 - error_rate;
+% model = fitcsvm(X, Y);

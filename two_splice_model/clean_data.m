@@ -4,8 +4,11 @@ function matrix = clean_data(file)
 %   time.
     matrix = readmatrix(file);
 
+    matrix(:,9:end) = [];
+
     matrix(:,1) = [];
 
-    % matrix = normalize(matrix, 'scale');
+    % Normalize the data so it can be compared, put on a graph etc.
+    matrix = normalize(matrix);
 end
 
