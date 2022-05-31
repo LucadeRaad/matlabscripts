@@ -1,12 +1,14 @@
 # matlabscripts
  
-General matlab scripts for GIZMO 2.0 EEG analysis.
+General matlab scripts for GIZMO 2.0 EEG analysis at UWB.
 
 ## Installation
 
 Clone the repo. Some scripts use the following matlab toolboxes:
-Statistics and Machine Learning Toolbox
-Parallel Computing Toolbox (recommended)
+
+- Statistics and Machine Learning Toolbox
+
+- Parallel Computing Toolbox (recommended)
 
 ## dsi_stream_flash_lights
 
