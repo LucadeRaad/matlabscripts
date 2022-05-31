@@ -1,4 +1,4 @@
-function output = graph_model(model, path, title)
+function fig = graph_model(model, path, title)
     data = clean_data(path);
 
     [~, score] = model.predictFcn(data);
@@ -9,6 +9,4 @@ function output = graph_model(model, path, title)
 
     fig = figure("Name", title);
     stackedplot(data);
-    
-    output = fig;
 end

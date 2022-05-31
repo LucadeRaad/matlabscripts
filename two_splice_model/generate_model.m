@@ -19,6 +19,8 @@ between_action_class = generate_labels(between_action_data, 'between action');
 X = [action_data; between_action_data];
 Y = [action_class; between_action_class];
 
-load('model.mat', 'FineGaussianSVM')
+% Go to Apps -> Classification Learner -> Model of your choice to do ML
 
-graph_model(FineGaussianSVM, "../light_comment_start_end/eegData.csv", "test")
+load('model.mat', 'FineGaussianSVM');
+
+graph_model(FineGaussianSVM, "../light_comment_start_end/eegData.csv", "test");
