@@ -11,7 +11,7 @@ fopen(t); %opens the TCPIP connection
 
 % Open text file for writing data
 % Make new file if one already exists
-fileName = 'eegData0.csv';
+fileName = '../light_comment_start_end/eegData0.csv';
 i = 0;
 while (exist(fileName, 'file') == 2)
     fileName = strrep(fileName, int2str(i), int2str(i+1));
@@ -24,7 +24,7 @@ textFile = fopen(fileName, 'a');
 %% Creating events
 % An event will be either flashing lights or a sound
 %f = figure;
-f = figure('WindowState', 'maximized', 'Color', 'black'); % Full-screen figure
+%f = figure('WindowState', 'maximized', 'Color', 'black'); % Full-screen figure
 rectangle('FaceColor', [0 0 0]) % [0, 0, 0] is black
 
 colors = get_color_array();
