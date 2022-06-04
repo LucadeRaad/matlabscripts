@@ -8,6 +8,8 @@ Clone the repo (or if you want the code right now you can download the files as 
 
 - Statistics and Machine Learning Toolbox
 
+- Instrument and Control Toolbox
+
 - Parallel Computing Toolbox (recommended)
 
 ## dsi_stream_flash_lights
