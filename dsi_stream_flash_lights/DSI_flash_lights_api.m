@@ -1,13 +1,10 @@
-% Maryam messed with this
-
 clc;
 clear;
 close all;
 
 %% Initialize the TCP/IP
-t = tcpip('localhost', 8844);
-fclose(t); %just in case it was open from a previous iteration
-fopen(t); %opens the TCPIP connection
+t = tcpclient('localhost', 8844);
+t.ByteOrder = "big-endian";
 
 % Open text file for writing data
 % Make new file if one already exists
@@ -29,7 +26,6 @@ rectangle('FaceColor', [0 0 0]) % [0, 0, 0] is black
 
 colors = get_color_array();
 [~, colors_size] = size(colors);
-% ~ 
 
 activity_state = activity_states.none;
 
@@ -54,6 +50,20 @@ QUIET_TIME = 4; % Number of seconds between starting an action.
 ACTIVE_TIME = 1; % Number of seconds the action takes. Should always be smaller than quiet time.
 CHANGE_THRESHOLD = 100; % Number of milliseconds until there is a change in the action state
 
+packet_count = 0;
+
+stream_settings = StreamSettings;
+
+stream_settings.file_descriptor = textFile;
+stream_settings.sub_state_values = colors;
+stream_settings.sub_state_length = colors_size;
+
+% Unsure how to only call my function when theres at least 2214 bytes.
+% Despite documentation stating this function is called when there are much
+% fewer bytes.
+configureCallback(t, "byte", 3000, @(src, evnt)callbackFcn(src, evnt, stream_settings));
+
+notDone = 0;
 
 while notDone
     %% Termination clause
@@ -61,7 +71,10 @@ while notDone
         notDone = 0;
         disp("Done!!!")
     end
-    if t.Bytesavailable < 12                     %if there's not even enough data available to read the header
+
+    continue
+
+    if t.NumBytesAvailable < 12                     %if there's not even enough data available to read the header
         cutoffcounter = cutoffcounter + 1;       %take a step towards terminating the whole thing
         if cutoffcounter == MAX_PACKETS_DROPPED  %and if 1500 steps go by without any new data,
             notDone = 0;                         %terminate the loop.
@@ -74,9 +87,14 @@ while notDone
     end
 
     % Read the packet
-    data = uint8(fread(t, 12))'; % Loads the first 12 bytes of the first packet, which should be the header
-    data = [data, uint8(fread(t, double(typecast(fliplr(data(7:8)), 'uint16'))))']; % Loads the full packet, based on the header
-    lengthdata = length(data);
+%     data = uint8(fread(t, 12))'; % Loads the first 12 bytes of the first packet, which should be the header
+%     data = [data, uint8(fread(t, double(typecast(fliplr(data(7:8)), 'uint16'))))']; % Loads the full packet, based on the header
+    
+    data = read(t);
+
+    length = double(typecast(fliplr(data(7:8)), 'uint16'))
+
+    data = data(1:length);
 
     if all(ismember(headerStart,data)) % Checks if the packet contains the header
         packetType = data(6); %this determines whether it's an event or sensor packet.
@@ -89,11 +107,11 @@ while notDone
         %% EEG sensor packet
         if packetType == 1
             Timestamp = swapbytes(typecast(data(13:16),'single'));
-            EEGdata = swapbytes(typecast(data(24:lengthdata),'single'));
+            EEGdata = swapbytes(typecast(data(24:length),'single'));
 
             EEGdata = EEGdata(1:7);
 
-            %% Actions are an FSA (Fourier Spectral Analysis)
+            %% Actions are an a State Automata
             % The comment is added at the end of a timestamp
             comment = '';
 
@@ -141,7 +159,7 @@ while notDone
             %% Write data to text file
             fmtSpec = repmat('%f,', 1, 7);
             
-            % fprintf(textFile, '%f,', time_passed);
+            fprintf(textFile, '%f,', time_passed);
             fprintf(textFile, '%f,', Timestamp);
             
             fprintf(textFile, fmtSpec, EEGdata);
@@ -153,5 +171,30 @@ while notDone
     end
 end
 
-fclose(t);
 fclose('all');
+
+function callbackFcn(t, ~, settings)
+    disp("CALL BACK FUNCTION!")
+    if t.NumBytesAvailable < 2213
+        disp("Not enough bytes!")
+        return
+    end
+
+    data = read(t);
+
+    length = double(typecast(fliplr(data(7:8)), 'uint16'));
+
+    data = data(1:length);
+
+    EEGdata = swapbytes(typecast(data(24:length),'single'));
+
+    EEGdata = EEGdata(1:7);
+
+    settings.num_flashes = settings.num_flashes + 1;
+
+%     disp(EEGdata)
+% 
+%     disp(settings.sub_state_values)
+% 
+%     disp(settings.num_flashes)
+end
