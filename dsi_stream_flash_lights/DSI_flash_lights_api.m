@@ -1,5 +1,3 @@
-% Maryam messed with this
-
 clc;
 clear;
 close all;
@@ -27,9 +25,23 @@ textFile = fopen(fileName, 'a');
 %f = figure('WindowState', 'maximized', 'Color', 'black'); % Full-screen figure
 rectangle('FaceColor', [0 0 0]) % [0, 0, 0] is black
 
+%% Used for the action function. Switch between the functions to use different variables
 colors = get_color_array();
 [~, colors_size] = size(colors);
-% ~ 
+
+% Also used for the action function. This crazy loop can be simplified
+notes = {'C' 'G' 'A' 'F'}; %notes which will be used
+freq = [261.60 391.99 440.00 349.23]; %frequencies of notes above
+melody = {'C' 'G' 'A' 'F' 'C' 'G' 'A' 'F'}; %four chords played twice
+sounds = [];
+
+%For Loop
+for k = 1:numel(melody)
+    note = 0:0.00025:1.0; % Note duration (which can be edited for length)
+    sounds = [sounds sin(2 * pi * freq(strcmp(notes, melody{k})) * note)];
+end
+
+[~, sounds_size] = size(sounds);
 
 activity_state = activity_states.none;
 
@@ -52,7 +64,7 @@ MAX_FLASHES = 10;
 MAX_PACKETS_DROPPED = 1500;
 QUIET_TIME = 4; % Number of seconds between starting an action.
 ACTIVE_TIME = 1; % Number of seconds the action takes. Should always be smaller than quiet time.
-CHANGE_THRESHOLD = 100; % Number of milliseconds until there is a change in the action state
+CHANGE_THRESHOLD = 50; % Number of milliseconds until there is a change in the action state
 
 
 while notDone
@@ -134,14 +146,15 @@ while notDone
 
                 if (milliseconds_since_color_changed > CHANGE_THRESHOLD)
                     % disp("CHANGING COLORS"); 
-                    [last_time_color_changed, last_color] = action(last_color, colors, colors_size);
+                    %[last_time_color_changed, last_color] = action(last_color, colors, colors_size);
+                    [last_time_color_changed, last_color] = sound_action(last_color, sounds, sounds_size);
                 end
             end
 
             %% Write data to text file
             fmtSpec = repmat('%f,', 1, 7);
             
-            % fprintf(textFile, '%f,', time_passed);
+            fprintf(textFile, '%f,', time_passed);
             fprintf(textFile, '%f,', Timestamp);
             
             fprintf(textFile, fmtSpec, EEGdata);
