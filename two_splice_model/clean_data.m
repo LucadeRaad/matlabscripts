@@ -4,7 +4,7 @@ function matrix = clean_data(file)
 %   time.
     matrix = readmatrix(file);
 
-    matrix(:,9:end) = [];
+    %matrix(:,9:end) = [];
 
     matrix(:,1) = [];
 
