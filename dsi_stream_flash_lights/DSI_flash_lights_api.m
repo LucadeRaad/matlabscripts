@@ -72,6 +72,8 @@ while notDone
     if num_flashes > MAX_FLASHES
         notDone = 0;
         disp("Done!!!")
+        
+        continue
     end
     if t.Bytesavailable < 12                     %if there's not even enough data available to read the header
         cutoffcounter = cutoffcounter + 1;       %take a step towards terminating the whole thing
@@ -105,7 +107,7 @@ while notDone
 
             EEGdata = EEGdata(1:7);
 
-            %% Actions are an FSA (Fourier Spectral Analysis)
+            %% Actions are a state automata
             % The comment is added at the end of a timestamp
             comment = '';
 
@@ -146,8 +148,8 @@ while notDone
 
                 if (milliseconds_since_color_changed > CHANGE_THRESHOLD)
                     % disp("CHANGING COLORS"); 
-                    %[last_time_color_changed, last_color] = action(last_color, colors, colors_size);
-                    [last_time_color_changed, last_color] = sound_action(last_color, sounds, sounds_size);
+                    [last_time_color_changed, last_color] = action(last_color, colors, colors_size);
+                    %[last_time_color_changed, last_color] = sound_action(last_color, sounds, sounds_size);
                 end
             end
 
@@ -158,6 +160,8 @@ while notDone
             fprintf(textFile, '%f,', Timestamp);
             
             fprintf(textFile, fmtSpec, EEGdata);
+
+            fprintf(textFile, num_flashes);
 
             fprintf(textFile, '%s,', comment);
 
