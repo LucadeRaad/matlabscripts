@@ -161,7 +161,7 @@ while notDone
             
             fprintf(textFile, fmtSpec, EEGdata);
 
-            fprintf(textFile, num_flashes);
+            fprintf(textFile, '%f', num_flashes);
 
             fprintf(textFile, '%s,', comment);
 
