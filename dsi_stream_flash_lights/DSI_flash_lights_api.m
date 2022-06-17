@@ -170,5 +170,6 @@ while notDone
     end
 end
 
+close all;
 fclose(t);
 fclose('all');
