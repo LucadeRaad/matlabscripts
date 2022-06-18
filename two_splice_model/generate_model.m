@@ -2,13 +2,7 @@ clear;
 clc;
 close all;
 
-flash_light_paths = ["../light_comment_start_end/eegData.csv", ...
-                     "../light_comment_start_end/eegData0.csv", ...
-                     "../light_comment_start_end/eegData1.csv", ...
-                     "../light_comment_start_end/eegData2.csv", ...
-                     "../light_comment_start_end/eegData3.csv", ...
-                     "../light_comment_start_end/eegData4.csv", ...
-                     "../light_comment_start_end/eegData5.csv"];
+flash_light_paths = ["../light_comment_start_end/eegData1.csv"];
 
 
 [action_data, between_action_data] = get_all_data(flash_light_paths);
@@ -25,4 +19,4 @@ Y = [action_class; between_action_class];
 
 load('model.mat', 'FineGaussianSVM');
 
-graph_model(FineGaussianSVM, "../light_comment_start_end/eegData5.csv", "test");
+% graph_model(FineGaussianSVM, "../light_comment_start_end/eegData5.csv", "test");

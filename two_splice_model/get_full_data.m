@@ -3,17 +3,16 @@ function [between_action, action] = get_full_data(file)
 %   Detailed explanation goes here
     Data = clean_data(file);
     
-    % Readtable doesnt work
-    comments = readmatrix(file);
+    comments = readcell(file);
 
-    comments = comments(:,9);
+    comments = comments(:,11);
     
     % Note that this will clump all actions into one, which means this code
     % will need to be modified if you want to have multiple stimuli in one
     % session
-    indexes_of_action_start = find(comments == 1);
+    indexes_of_action_start = find(strcmp(comments, 'start of action'));
 
-    indexes_of_action_end = find(comments == 2);
+    indexes_of_action_end = find(strcmp(comments, 'end of action'));
 
     [start_length, ~] = size(indexes_of_action_start);
     [end_length, ~] = size(indexes_of_action_end);
@@ -54,9 +53,9 @@ function [action_data, between_action_data] = get_actions(data, indexes_of_actio
 
     % We create a session of the size we want so that matlab doesn't have
     % to deal with inefficient memory allocation
-    action_data = zeros([action_length, 7]);
+    action_data = zeros([action_length, 9]);
 
-    between_action_data = zeros([between_action_length, 7]);
+    between_action_data = zeros([between_action_length, 9]);
     
     for i = 1:length
         start_index = indexes_of_action_start(i,:);

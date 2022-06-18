@@ -23,8 +23,8 @@ function [output_data, between_action_data] = get_all_data(paths)
         output_between_length = output_between_length + bl;
     end
 
-    output_data = zeros([output_data_length, 7]);
-    between_action_data = zeros([output_between_length, 7]);
+    output_data = zeros([output_data_length, 9]);
+    between_action_data = zeros([output_between_length, 9]);
 
     offset = 1;
 
