@@ -3,7 +3,12 @@ clc;
 close all;
 
 %% Note that this is hardcoded. When you add or remove .csv files remember to also update here!
-flash_light_paths = ["../light_comment_start_end/eegData1.csv"];
+% Note that this code will crash if you read a .csv file that doesn't exist
+% so just double check that its all right
+flash_light_paths = ["../light_comment_start_end/eegData.csv", ...
+                     "../light_comment_start_end/eegData1.csv", ...
+                     "../light_comment_start_end/eegData2.csv", ...
+                     ];
 
 
 [action_data, between_action_data] = get_all_data(flash_light_paths);
