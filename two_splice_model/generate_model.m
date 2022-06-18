@@ -2,6 +2,7 @@ clear;
 clc;
 close all;
 
+%% Note that this is hardcoded. When you add or remove .csv files remember to also update here!
 flash_light_paths = ["../light_comment_start_end/eegData1.csv"];
 
 
