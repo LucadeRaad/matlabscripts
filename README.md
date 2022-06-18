@@ -10,6 +10,8 @@ Clone the repo (or if you want the code right now you can download the files as 
 
 - Instrument and Control Toolbox
 
+- Predictive Maintenance Toolbox
+
 - Parallel Computing Toolbox (recommended)
 
 ## dsi_stream_flash_lights
