@@ -11,7 +11,6 @@ function output_labels = generate_all_labels(data_matrix, label_name)
 
     output_labels = transpose(data);
 
-    disp("okayge clap")
 % 
 %     output_data_length = 0;
 % 
