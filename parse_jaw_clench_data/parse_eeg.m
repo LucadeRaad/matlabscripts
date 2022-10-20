@@ -1,16 +1,16 @@
-function [output] = parse_eeg(file_name)
+function data = parse_eeg(file_name)
 %PARSE_EEG Takes a .csv from an eeg file and returns a matrix of the data
 %   Only records data, no artifacts or other data
 
 rand_clench_struct = dir(fullfile(file_name, '*_filtered.csv'));
 
-rand_clench_filenames = struct2cell(rand_clench_struct);
-rand_clench_filenames = append(rand_clench_filenames(2,:), '\', rand_clench_filenames(1,:));
+filenames = struct2cell(rand_clench_struct);
+filenames = append(filenames(2,:), '\', filenames(1,:));
 
-data = {length(rand_clench_filenames)};
+data = {length(filenames)};
 
-for index = 1:length(rand_clench_filenames)
-    data{index} = readmatrix(rand_clench_filenames{index});
+for index = 1:length(filenames)
+    data{index} = readmatrix(filenames{index});
 
     data{index}(:,9:end) = [];
 
@@ -19,10 +19,6 @@ for index = 1:length(rand_clench_filenames)
     % for testing
     %data{index}(:,2:end) = [];
 end
-
-
-output = data;
-
 
 % output = cat(1, data{:});
 

@@ -33,8 +33,9 @@ for index = 1:length(matrix) / (n - overlap)
         PSD = fhat.*conj(fhat)/n;
         PSD(1:175,:) = 0;
     
-        avg = mean(PSD);
-        output(offset,jindex) = avg;
+        %avg = mean(PSD);
+        avg = trapz(PSD);
+        output(offset + n,jindex) = avg;
     end
 
     offset = offset + (n - overlap);
