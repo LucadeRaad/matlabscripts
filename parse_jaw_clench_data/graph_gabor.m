@@ -3,7 +3,7 @@ function graph_gabor(raw_data, n, overlap)
 %   Detailed explanation goes here
 
 for index = 1:length(raw_data)
-    output = gabor_transformation(raw_data{index}, n, overlap);
+    output = gabor_transform(raw_data{index}, n, overlap);
 
     dp = find(output, 1);
 

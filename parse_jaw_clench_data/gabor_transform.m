@@ -1,5 +1,5 @@
-function output = gabor_transformation(matrix, n, overlap)
-%GABOR_TRANSFORMATION Creates a sliding window of the matrix based on size
+function output = gabor_transform(matrix, n, overlap)
+%GABOR_TRANSFORM Creates a sliding window of the matrix based on size
 %n
 %   Creates a square sliding window of the matrix, creates n sized matrixes
 
