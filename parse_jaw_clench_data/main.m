@@ -7,15 +7,20 @@ close all;
 % files and the program files.
 
 
-raw_unordered_eeg = parse_eeg('Data_RandomClench');
+raw_unordered_eeg = parse_eeg('Data_RandomClench', '*_raw.csv');
 
-raw_ordered_eeg = parse_eeg('Data_Clench_RAW');
+filtered_unordered_eeg = parse_eeg('Data_RandomClench', '*_filtered.csv');
+
+%raw_ordered_eeg = parse_eeg('Data_Clench_RAW');
 
 %% Gabor transformation
 % Create a sliding window, do fft(fast fourier transformation) on every
 % sliding window, record maybe the mode or slice the fft graph into pieces
-% and then recording the pieces 
+% and then recording the pieces
 
-graph_gabor(raw_unordered_eeg, 300, 250);
+graph_gabor(raw_unordered_eeg, 300, 250, 1, 0);
+
+
+graph_gabor(filtered_unordered_eeg, 300, 250, 0, 100);
 
 %graph_gabor(raw_ordered_eeg);

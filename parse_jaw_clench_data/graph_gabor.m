@@ -1,9 +1,9 @@
-function graph_gabor(raw_data, n, overlap)
+function graph_gabor(raw_data, n, overlap, shouldBandPass, startIndex)
 %GRAPH_GABOR Summary of this function goes here
 %   Detailed explanation goes here
 
 for index = 1:length(raw_data)
-    output = gabor_transform(raw_data{index}, n, overlap);
+    output = gabor_transform(raw_data{index}, n, overlap, shouldBandPass);
 
     dp = find(output, 1);
 
@@ -27,12 +27,14 @@ for index = 1:length(raw_data)
         gindex = gindex * 2;
         gindex = gindex + 1;
 
+        graph(:,gindex) = bandpass(graph(:,gindex), [1, 50], 300);
+
         graph(:,gindex) = raw_data{index}(:,jindex);
 
         graph(:,gindex + 1) = output(:,jindex);
     end
     
-    figure(index);
+    figure(index + startIndex);
     stackedplot(graph);
 end
 

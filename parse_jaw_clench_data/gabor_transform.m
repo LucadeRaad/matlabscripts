@@ -1,4 +1,4 @@
-function output = gabor_transform(matrix, n, overlap)
+function output = gabor_transform(matrix, n, overlap, shouldBandPass)
 %GABOR_TRANSFORM Creates a sliding window of the matrix based on size
 %n
 %   Creates a square sliding window of the matrix, creates n sized matrixes
@@ -22,9 +22,12 @@ freq = 1/(dt*n)*(0:n);
 
 w = width(matrix);
 
-for index = 1:length(matrix) / (n - overlap)
+for index = 1:1500%length(matrix) / (n - overlap)
     slice = matrix(offset:offset + n, :);
 
+    if shouldBandPass
+        slice = bandpass(slice, [1, 50], 300);
+    end
 
     for jindex = 1:w
         sslice = slice(:, jindex);
