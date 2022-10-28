@@ -9,10 +9,13 @@ output = zeros(size(matrix));
 
 offset = 1;
 
-Fs = 300;            % Sampling frequency for my case frequency is 300 because 300 data points per second    
+% Sampling frequency for my case frequency is 300 because 300 data points per second
+Fs = 300;
 
 dt = 1/Fs;
 
+% Creates the vector of frequencies that is the x axis. Goes from lowest
+% frequency 0 to highest frequency which is the size of the window
 freq = 1/(dt*window_size)*(0:window_size);
 
 w = width(matrix);
@@ -27,7 +30,11 @@ for index = 1:length(matrix) / (window_size - overlap)
         fhat = fft(sslice);
 
         % Compute the power spectrum (power per frequency)
-        % https://www.mathworks.com/help/dsp/ug/estimate-the-power-spectrum-in-matlab.html
+        % FFT creates fhat. Fhat is a matrix of complex values that have a
+        % magnitude and a phase. The magnitude tells you the occurences of
+        % the frequency(sine and cosine). Phase tells you if the magnitude
+        % is more sine or cosine. This equation does the equivalent of
+        % magnitude of fhat squared.
         PSD = fhat.*conj(fhat)/window_size;
 
         graphPSD = PSD;
@@ -43,7 +50,7 @@ for index = 1:length(matrix) / (window_size - overlap)
             plot(freq(Length), graphPSD(Length));
             title(sprintf('Figure %d Fast Fourier Transform', index))
             xlabel('Power Spectrum (Hz)')
-            ylabel('Amplitude (Microvolts)')
+            ylabel('Frequency (Microvolts)')
 
 
             % the first bit of the fourier transform has noise at the
@@ -55,7 +62,7 @@ for index = 1:length(matrix) / (window_size - overlap)
             plot(freq(Length), graphPSD(Length));
             title(sprintf('Figure %d Fast Fourier Transform (low band pass filtered)', index))
             xlabel('Power Spectrum (Hz)')
-            ylabel('Amplitude (Microvolts)')
+            ylabel('Frequency (Microvolts)')
         end
 
         PSD(1:175,:) = 0;

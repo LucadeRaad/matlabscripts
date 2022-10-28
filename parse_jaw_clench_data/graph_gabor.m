@@ -10,7 +10,7 @@ for index = 1:length(raw_data)
     matrix = raw_data{index};
 
     % displayFFT is more for testing so we resize matrix for easier
-    % visualization, we just look at the first column
+    % visualization, so we can just look at the first column
     if displayFFT
         matrix = matrix(:,1);
     end

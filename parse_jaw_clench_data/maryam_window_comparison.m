@@ -7,14 +7,14 @@ close all;
 filtered_unordered_eeg = parse_eeg('Data_RandomClench', '*_filtered.csv');
 % filtered_ordered_eeg = parse_eeg('Data_Clench_RAW', '*_filtered.csv');
 n = 500;
-iteration=10;
+iteration=5;
 displayFFT=false;
 
-for i=0:iteration:99 % Start movie loop
-    pause(1);
-    overlap = n/100 *i;
+for i=1:iteration:96 % Start movie loop
+    pause(.1);
+    overlap = n/100 * i;
     f = figure(1);
-    title = 'overlap= ' + string(overlap);
+    title = 'overlap: ' + string(overlap);
     disp(title);
 
     % We only care about 1 session at a time!
