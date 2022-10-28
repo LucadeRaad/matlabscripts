@@ -40,17 +40,25 @@ for index = 1:length(matrix) / (window_size - overlap)
         graphPSD = PSD;
 
         if displayFFT
+            % Figure 1 is the data, figure 10x is the data with 1 fast
+            % fourier transform figure 100x is the fast fourier transform
+            % but with the first values removed like a band pass filter
+
             figure(index)
             t = stackedplot(slice);
             t.Title = sprintf('Figure %d unfiltered data', index);
             t.XLabel = 'Data Points (300 samples per second)';
             t.DisplayLabels = "Microvolts";
 
+            % The reasoning behind the labeling of the Y axis is from this
+            % post:
+            % https://stackoverflow.com/questions/1523814/units-of-a-fourier-transform-fft-when-doing-spectral-analysis-of-a-signal
+            
             figure (100 + index)
             plot(freq(Length), graphPSD(Length));
             title(sprintf('Figure %d Fast Fourier Transform', index))
-            xlabel('Power Spectrum (Hz)')
-            ylabel('Frequency (Microvolts)')
+            xlabel('Frequency (Hz)')
+            ylabel('Power Density')
 
 
             % the first bit of the fourier transform has noise at the
@@ -61,8 +69,8 @@ for index = 1:length(matrix) / (window_size - overlap)
             figure (1000 + index)
             plot(freq(Length), graphPSD(Length));
             title(sprintf('Figure %d Fast Fourier Transform (low band pass filtered)', index))
-            xlabel('Power Spectrum (Hz)')
-            ylabel('Frequency (Microvolts)')
+            xlabel('Frequency (Hz)')
+            ylabel('Power Density')
         end
 
         PSD(1:175,:) = 0;
