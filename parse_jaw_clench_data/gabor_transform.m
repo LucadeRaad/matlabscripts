@@ -20,7 +20,6 @@ w = width(matrix);
 Length = 1:floor(window_size/2);
 
 for index = 1:length(matrix) / (window_size - overlap)
-    
     slice = matrix(offset:offset + window_size, :);   
 
     for jindex = 1:w
@@ -28,8 +27,6 @@ for index = 1:length(matrix) / (window_size - overlap)
         fhat = fft(sslice);
 
         % Compute the power spectrum (power per frequency)
-        % Since matlab has some quirks with it its best to use matlab to
-        % understand what is happening
         % https://www.mathworks.com/help/dsp/ug/estimate-the-power-spectrum-in-matlab.html
         PSD = fhat.*conj(fhat)/window_size;
 
@@ -37,21 +34,28 @@ for index = 1:length(matrix) / (window_size - overlap)
 
         if displayFFT
             figure(index)
-            stackedplot(slice);
-            title(sprintf('Figure %d unfiltered data', index))
+            t = stackedplot(slice);
+            t.Title = sprintf('Figure %d unfiltered data', index);
+            t.XLabel = 'Data Points (300 samples per second)';
+            t.DisplayLabels = "Microvolts";
 
             figure (100 + index)
             plot(freq(Length), graphPSD(Length));
-            title(sprintf('Figure %d Fast Fourier Transformation', index))
+            title(sprintf('Figure %d Fast Fourier Transform', index))
+            xlabel('Power Spectrum (Hz)')
+            ylabel('Amplitude (Microvolts)')
 
-            % the first bit of the fourier transformation has noise at the
+
+            % the first bit of the fourier transform has noise at the
             % beginning that we can discard when we want to use the data
             % to make desisions.
             graphPSD(1:30,:) = 0;
     
             figure (1000 + index)
             plot(freq(Length), graphPSD(Length));
-            title(sprintf('Figure %d Fast Fourier Transformation (human readable)', index))
+            title(sprintf('Figure %d Fast Fourier Transform (low band pass filtered)', index))
+            xlabel('Power Spectrum (Hz)')
+            ylabel('Amplitude (Microvolts)')
         end
 
         PSD(1:175,:) = 0;
