@@ -17,7 +17,7 @@ for i=0:iteration:99 % Start movie loop
     title = 'overlap= ' + string(overlap);
     disp(title);
 
-    % We only care about 1 piece of information at a time!
+    % We only care about 1 session at a time!
     graph_gabor(filtered_unordered_eeg(1), n, overlap, displayFFT);
     
     set(f, 'Name', title);
