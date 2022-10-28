@@ -15,9 +15,6 @@ for index = 1:length(filenames)
     data{index}(:,9:end) = [];
 
     data{index}(:,1) = [];
-    
-    % for testing
-    %data{index}(:,2:end) = [];
 end
 
 % output = cat(1, data{:});

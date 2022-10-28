@@ -1,16 +1,11 @@
-function output = gabor_transform(matrix, n, overlap, shouldBandPass)
+function output = gabor_transform(matrix, window_size, overlap, displayFFT)
 %GABOR_TRANSFORM Creates a sliding window of the matrix based on size
 %n
 %   Creates a square sliding window of the matrix, creates n sized matrixes
 
+displayFFT = logical(displayFFT);
+
 output = zeros(size(matrix));
-
-%output = [matrix, output];
-
-
-
-% figure(1500)
-% stackedplot(matrix)
 
 offset = 1;
 
@@ -18,47 +13,53 @@ Fs = 300;            % Sampling frequency for my case frequency is 300 because 3
 
 dt = 1/Fs;
 
-freq = 1/(dt*n)*(0:n);
+freq = 1/(dt*window_size)*(0:window_size);
 
 w = width(matrix);
 
-for index = 1:1500%length(matrix) / (n - overlap)
-    slice = matrix(offset:offset + n, :);
+Length = 1:floor(window_size/2);
 
-    if shouldBandPass
-        slice = bandpass(slice, [1, 50], 300);
-    end
+for index = 1:length(matrix) / (window_size - overlap)
+    
+    slice = matrix(offset:offset + window_size, :);   
 
     for jindex = 1:w
         sslice = slice(:, jindex);
         fhat = fft(sslice);
 
-        PSD = fhat.*conj(fhat)/n;
-        PSD(1:175,:) = 0;
+        % Compute the power spectrum (power per frequency)
+        PSD = fhat.*conj(fhat)/window_size;
+
+        graphPSD = PSD;
+
+        if displayFFT
+            figure(index)
+            stackedplot(slice);
+            title(sprintf('Figure %d unfiltered data', index))
+
+            figure (100 + index)
+            plot(freq(Length), graphPSD(Length));
+            title(sprintf('Figure %d Fast Fourier Transformation', index))
+
+            % the first bit of the fourier transformation has noise at the
+            % beginning that we can discard when we want to use the data
+            % to make desisions.
+            graphPSD(1:30,:) = 0;
     
-        %avg = mean(PSD);
+            figure (1000 + index)
+            plot(freq(Length), graphPSD(Length));
+            title(sprintf('Figure %d Fast Fourier Transformation (human readable)', index))
+        end
+
+        PSD(1:175,:) = 0;
+
         avg = trapz(PSD);
-        output(offset + n,jindex) = avg;
+        output(offset + window_size,jindex) = avg;
     end
+    
+    offset = offset + (window_size - overlap);
 
-    offset = offset + (n - overlap);
-
-
-    %fprintf('figure %d, avg %f\n', index, mean(PSD));
-
-    %     Length = 1:floor(n/2);
-    % 
-    %     figure(index)
-    %     stackedplot(slice);
-    %     figure (100 + index)
-    %     plot(freq(Length), PSD(Length));
-    % 
-    %     iPSD = ifft(fhat);
-    %     
-    %     figure (1000 + index)
-    %     plot(freq(Length), iPSD(Length))
-
-    if offset + n > length(matrix)
+    if offset + window_size > length(matrix)
         break
     end
 end

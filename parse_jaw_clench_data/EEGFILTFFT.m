@@ -57,7 +57,7 @@
 
 % TAKEN FROM https://github.com/sccn/eeglab/blob/develop/functions/sigprocfunc/eegfiltfft.m
 
-function smoothdata = eegfiltfft(data, fs, lowcut, highcut, epochframes, filtorder, revfilt);
+function smoothdata = EEGFILTFFT(data, fs, lowcut, highcut, epochframes, filtorder, revfilt);
     
     if nargin < 4
         help eegfiltfft;

@@ -1,41 +1,54 @@
-function graph_gabor(raw_data, n, overlap, shouldBandPass, startIndex)
+function graph_gabor(raw_data, n, overlap, displayFFT)
 %GRAPH_GABOR Summary of this function goes here
 %   Detailed explanation goes here
 
+if overlap > n
+    disp("You cannot overlap more than the size than the window! Perhaps swap your n/overlap variables?")
+
+    return
+end
+
 for index = 1:length(raw_data)
-    output = gabor_transform(raw_data{index}, n, overlap, shouldBandPass);
+    matrix = raw_data{index};
+
+    % displayFFT is more for testing so we resize matrix for easier
+    % visualization, we just look at the first column
+    if displayFFT
+        matrix = matrix(:,1);
+    end
+
+    output = gabor_transform(matrix, n, overlap, displayFFT);
 
     dp = find(output, 1);
 
     output(1:dp,:) = 0;
 
-%     collapsed_output = sum(output, 2);
-% 
-%     % Take out all values below the median
-%     mask = 4 / 5 * median(nonzeros(collapsed_output));
-%     collapsed_output(collapsed_output < mask) = 0;
-% 
-%     mask = median(nonzeros(collapsed_output));
-%     collapsed_output(collapsed_output < mask) = 0;
+    graph = zeros(size([matrix, output]));
 
-%    graph = [raw_data{index}, collapsed_output];
-
-   graph = zeros(size([raw_data{index}, output]));
-
-    for jindex = 1:width(raw_data{index})
+    for jindex = 1:width(matrix)
         gindex = jindex - 1;
         gindex = gindex * 2;
         gindex = gindex + 1;
 
-        graph(:,gindex) = bandpass(graph(:,gindex), [1, 50], 300);
-
-        graph(:,gindex) = raw_data{index}(:,jindex);
+        %graph(:,gindex) = EEGFILTFFT(graph(:,gindex), 300, 1, 50); % bandpass(graph(:,gindex), [1, 50], 300);
+        
+        graph(:,gindex) = matrix(:,jindex);
 
         graph(:,gindex + 1) = output(:,jindex);
     end
-    
-    figure(index + startIndex);
+
+    figIndex = index;
+
+    % There will be many other graphs but we want to also see the bigger
+    % picture so we put the final graph at a really big number so it
+    % doesn't overwrite anything
+    if displayFFT
+        figIndex = figIndex + 10000;
+    end
+
+    figure(figIndex);
     stackedplot(graph);
+    
 end
 
 
