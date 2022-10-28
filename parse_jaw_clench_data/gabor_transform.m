@@ -28,6 +28,9 @@ for index = 1:length(matrix) / (window_size - overlap)
         fhat = fft(sslice);
 
         % Compute the power spectrum (power per frequency)
+        % Since matlab has some quirks with it its best to use matlab to
+        % understand what is happening
+        % https://www.mathworks.com/help/dsp/ug/estimate-the-power-spectrum-in-matlab.html
         PSD = fhat.*conj(fhat)/window_size;
 
         graphPSD = PSD;

@@ -1,12 +1,10 @@
-function graph_gabor(raw_data, n, overlap, displayFFT)
+function graph_gabor(raw_data, window_size, overlap, displayFFT)
 %GRAPH_GABOR Summary of this function goes here
 %   Detailed explanation goes here
 
-if overlap > n
-    disp("You cannot overlap more than the size than the window! Perhaps swap your n/overlap variables?")
+assert(overlap < window_size, ...
+    'You cannot overlap more than the size than the window! Perhaps swap your window_size/overlap variables?')
 
-    return
-end
 
 for index = 1:length(raw_data)
     matrix = raw_data{index};
@@ -17,7 +15,7 @@ for index = 1:length(raw_data)
         matrix = matrix(:,1);
     end
 
-    output = gabor_transform(matrix, n, overlap, displayFFT);
+    output = gabor_transform(matrix, window_size, overlap, displayFFT);
 
     dp = find(output, 1);
 

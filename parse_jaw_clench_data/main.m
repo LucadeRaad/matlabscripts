@@ -11,7 +11,7 @@ close all;
 
 filtered_unordered_eeg = parse_eeg('Data_RandomClench', '*_filtered.csv');
 
-raw_ordered_eeg = parse_eeg('Data_Clench_RAW', '*_filtered.csv');
+filtered_ordered_eeg = parse_eeg('Data_Clench_RAW', '*_filtered.csv');
 
 %% Gabor transform
 % Create a sliding window, do fft(fast fourier transformation) on every
