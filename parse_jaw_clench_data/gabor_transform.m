@@ -22,12 +22,13 @@ w = width(matrix);
 
 Length = 1:floor(window_size/2);
 
+cutoff = window_size * (3/4);
+
 for index = 1:length(matrix) / (window_size - overlap)
-    slice = matrix(offset:offset + window_size, :);   
+    slice = matrix(offset:offset + window_size, :);
 
     for jindex = 1:w
         sslice = slice(:, jindex);
-        fhat = fft(sslice);
 
         % Compute the power spectrum (power per frequency)
         % FFT creates fhat. Fhat is a matrix of complex values that have a
@@ -35,13 +36,15 @@ for index = 1:length(matrix) / (window_size - overlap)
         % the frequency(sine and cosine). Phase tells you if the magnitude
         % is more sine or cosine. This equation does the equivalent of
         % magnitude of fhat squared.
+        fhat = fft(sslice);
+        
         PSD = fhat.*conj(fhat)/window_size;
 
         graphPSD = PSD;
 
         if displayFFT
-            % Figure 1 is the data, figure 10x is the data with 1 fast
-            % fourier transform figure 100x is the fast fourier transform
+            % Figure 1 is the data, figure 10 + x is the data with 1 fast
+            % fourier transform figure 100 + x is the fast fourier transform
             % but with the first values removed like a band pass filter
 
             figure(index)
@@ -64,7 +67,7 @@ for index = 1:length(matrix) / (window_size - overlap)
             % the first bit of the fourier transform has noise at the
             % beginning that we can discard when we want to use the data
             % to make desisions.
-            graphPSD(1:30,:) = 0;
+            graphPSD(1:30, :) = 0;
     
             figure (1000 + index)
             plot(freq(Length), graphPSD(Length));
@@ -73,7 +76,7 @@ for index = 1:length(matrix) / (window_size - overlap)
             ylabel('Power Density')
         end
 
-        PSD(1:175,:) = 0;
+        PSD(1:cutoff,:) = 0;
 
         avg = trapz(PSD);
         output(offset + window_size,jindex) = avg;

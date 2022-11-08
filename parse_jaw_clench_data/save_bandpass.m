@@ -38,7 +38,7 @@ if not(isfolder(dest_path{1}))
 end
 
 dest_filenames = dest_filenames(1,:);
-dest_filenames = strrep(dest_filenames, '_raw', '_LUCA_BANPASS');
+dest_filenames = strrep(dest_filenames, '_raw', '_LUCA_BANDPASS');
 dest_filenames = append(dest_path, '\', dest_filenames);
 
 

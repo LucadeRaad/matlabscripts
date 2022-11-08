@@ -19,7 +19,7 @@ for index = 1:length(raw_data)
 
     dp = find(output, 1);
 
-    output(1:dp,:) = 0;
+    % output(1:dp,:) = 0;
 
     graph = zeros(size([matrix, output]));
 
