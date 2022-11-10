@@ -14,15 +14,17 @@ Fs = 300;
 
 dt = 1/Fs;
 
+freq_incr = 1/(dt * window_size);
+
 % Creates the vector of frequencies that is the x axis. Goes from lowest
 % frequency 0 to highest frequency which is the size of the window
-freq = 1/(dt*window_size)*(0:window_size);
+freq = freq_incr * (0:window_size);
 
 w = width(matrix);
 
 Length = 1:floor(window_size/2);
 
-cutoff = window_size * (3/4);
+cutoff = cast(window_size * (3/4), "uint8");
 
 for index = 1:length(matrix) / (window_size - overlap)
     slice = matrix(offset:offset + window_size, :);
