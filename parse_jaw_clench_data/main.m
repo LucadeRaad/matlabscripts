@@ -20,7 +20,7 @@ raw_unordered_eeg = parse_eeg('Data_RandomClench', '*_raw.csv', do_bandpass);
 % sliding window, record maybe the mode or slice the fft graph into pieces
 % and then recording the pieces
 
-window_size = 450;
+window_size = 900;
 window_overlap = 0;
 display_internal_fft = false;
 

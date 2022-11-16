@@ -17,7 +17,6 @@ assert(len ~= 0, ...
     'Unable to find any files that match %s in dir %s. (double check the path and from where you are calling your script if the path is relative)\n', ...
     match, dir_name);
 
-
 dest_filenames = struct2cell(csv_files);
 
 dest_full_path = dest_filenames(2,:);

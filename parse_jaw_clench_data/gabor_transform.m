@@ -14,6 +14,8 @@ Fs = 300;
 
 dt = 1/Fs;
 
+slice_indexes = [1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51];
+
 freq_incr = 1/(dt * window_size);
 
 % Creates the vector of frequencies that is the x axis. Goes from lowest
@@ -24,7 +26,7 @@ w = width(matrix);
 
 Length = 1:floor(window_size/2);
 
-cutoff = cast(window_size * (3/4), "uint8");
+% cutoff = cast(window_size * (3/4), "uint8");
 
 for index = 1:length(matrix) / (window_size - overlap)
     slice = matrix(offset:offset + window_size, :);
@@ -69,8 +71,13 @@ for index = 1:length(matrix) / (window_size - overlap)
             % the first bit of the fourier transform has noise at the
             % beginning that we can discard when we want to use the data
             % to make desisions.
-            graphPSD(1:30, :) = 0;
-    
+
+            graphPSD = AlgorithmOutput(slice_indexes, freq_incr, graphPSD);
+
+%             dp = find(graphPSD, 1);
+% 
+%             graphPSD(dp) = 0;
+
             figure (1000 + index)
             plot(freq(Length), graphPSD(Length));
             title(sprintf('Figure %d Fast Fourier Transform (low band pass filtered)', index))
@@ -78,10 +85,38 @@ for index = 1:length(matrix) / (window_size - overlap)
             ylabel('Power Density')
         end
 
-        PSD(1:cutoff,:) = 0;
+        %% Calculate mean/meadian/mode
+        % PSD(1:cutoff,:) = 0;
 
-        avg = trapz(PSD);
-        output(offset + window_size,jindex) = avg;
+        % testfreq = freq(Length);
+
+        % testPSD = PSD(Length);
+
+        % disp(testfreq)
+        % disp(testPSD)
+
+        % avg = trapz(PSD);
+
+        % Turn PSD into equally sized slices that are the average of that
+        % slice
+        PSD = AlgorithmOutput(slice_indexes, freq_incr, graphPSD);
+
+        % The first slice is always large due to how the eeg collects data
+        % so we can use it as a "constant"
+        first_index = round(slice_indexes(1) / freq_incr);
+    
+        % The end of the first section and now we take the rest into one
+        % big chunk and see if they compare
+        second_index = round(slice_indexes(2) / freq_incr);
+        third_index = round(slice_indexes(end) / freq_incr);
+
+        low_change = sum(PSD(first_index : second_index));
+
+        high_change = sum(PSD(second_index + 1 : third_index));
+
+        alg_output = high_change > low_change;
+
+        output(offset: offset + window_size, jindex) = alg_output;
     end
     
     offset = offset + (window_size - overlap);
@@ -91,4 +126,20 @@ for index = 1:length(matrix) / (window_size - overlap)
     end
 end
 
+end
+
+function PSD = AlgorithmOutput(slice_indexes, freq_incr, PSD)
+prev_index = slice_indexes(1);
+
+for a = 2:length(slice_indexes)
+    arb_index_s = round(prev_index / freq_incr);
+    
+    arb_index_e = round(slice_indexes(a) / freq_incr);
+    
+    slice_value = mean(PSD(arb_index_s : arb_index_e));
+    
+    PSD(arb_index_s : arb_index_e) = slice_value;
+    
+    prev_index = slice_indexes(a);
+end
 end

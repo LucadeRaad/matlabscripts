@@ -19,7 +19,7 @@ for index = 1:length(raw_data)
 
     dp = find(output, 1);
 
-    % output(1:dp,:) = 0;
+    output(1:dp,:) = 0;
 
     graph = zeros(size([matrix, output]));
 
@@ -27,8 +27,6 @@ for index = 1:length(raw_data)
         gindex = jindex - 1;
         gindex = gindex * 2;
         gindex = gindex + 1;
-
-        %graph(:,gindex) = EEGFILTFFT(graph(:,gindex), 300, 1, 50); % bandpass(graph(:,gindex), [1, 50], 300);
         
         graph(:,gindex) = matrix(:,jindex);
 
@@ -60,9 +58,6 @@ for index = 1:length(raw_data)
                            "P3 - LE (Microvolts)", "P3 - LE Algorithm Output", ...
                            "P4 - LE (Microvolts)", "P4 - LE Algorithm Output",];
     end
-    
 end
-
-
 end
 
