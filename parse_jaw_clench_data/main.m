@@ -22,7 +22,7 @@ raw_unordered_eeg = parse_eeg('Data_RandomClench', '*_raw.csv', do_bandpass);
 
 window_size = 900;
 window_overlap = 0;
-display_internal_fft = false;
+display_internal_fft = true;
 
 % You can add a '(1)' to the output from parse_eeg (filtered_unordered_eeg variable) if you only want to see 1
 % session, ie:

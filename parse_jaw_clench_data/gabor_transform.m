@@ -80,26 +80,18 @@ for index = 1:length(matrix) / (window_size - overlap)
 
             figure (1000 + index)
             plot(freq(Length), graphPSD(Length));
-            title(sprintf('Figure %d Fast Fourier Transform (low band pass filtered)', index))
+            title(sprintf('Figure %d FFT sliced', index))
             xlabel('Frequency (Hz)')
             ylabel('Power Density')
         end
 
         %% Calculate mean/meadian/mode
-        % PSD(1:cutoff,:) = 0;
-
-        % testfreq = freq(Length);
-
-        % testPSD = PSD(Length);
-
-        % disp(testfreq)
-        % disp(testPSD)
-
-        % avg = trapz(PSD);
 
         % Turn PSD into equally sized slices that are the average of that
         % slice
-        PSD = AlgorithmOutput(slice_indexes, freq_incr, graphPSD);
+        PSD = AlgorithmOutput(slice_indexes, freq_incr, PSD);
+
+
 
         % The first slice is always large due to how the eeg collects data
         % so we can use it as a "constant"
@@ -133,7 +125,6 @@ prev_index = slice_indexes(1);
 
 for a = 2:length(slice_indexes)
     arb_index_s = round(prev_index / freq_incr);
-    
     arb_index_e = round(slice_indexes(a) / freq_incr);
     
     slice_value = mean(PSD(arb_index_s : arb_index_e));

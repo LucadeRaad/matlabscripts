@@ -21,7 +21,21 @@ for index = 1:length(raw_data)
 
     output(1:dp,:) = 0;
 
-    graph = zeros(size([matrix, output]));
+    more_than_half_eeg_channels = 5;
+
+    if size(output, 2) > more_than_half_eeg_channels
+        graph = [zeros(size([matrix, output + 1])), zeros(size(output,1),1)];    
+
+        % There are 7 eeg channels. Right now we check if more than half of the
+        % data coming from the eeg channels agree that the data is a clench
+        graph(:,end) = sum(output, 2) > more_than_half_eeg_channels;
+
+    else
+        graph = zeros(size([matrix, output + 1]));
+    end
+
+    % We will now take the data, and put it next to its channel eg. output
+    % column 1 right below data column 1 for easier viewing.
 
     for jindex = 1:width(matrix)
         gindex = jindex - 1;
@@ -56,7 +70,8 @@ for index = 1:length(raw_data)
                            "C4 - LE (Microvolts)", "C4 - LE Algorithm Output", ...
                            "Pz - LE (Microvolts)", "Pz - LE Algorithm Output", ...
                            "P3 - LE (Microvolts)", "P3 - LE Algorithm Output", ...
-                           "P4 - LE (Microvolts)", "P4 - LE Algorithm Output",];
+                           "P4 - LE (Microvolts)", "P4 - LE Algorithm Output", ...
+                           "All Algorithm Output"];
     end
 end
 end
