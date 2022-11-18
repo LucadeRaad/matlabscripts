@@ -1,11 +1,12 @@
-function data = parse_eeg(dir_name, match, do_bandpass)
+function [data, names] = parse_eeg(dir_name, match, do_bandpass)
 %PARSE_EEG Takes a .csv from an eeg file and returns a matrix of the data
 %   Only records data, no artifacts or other data
 
 rand_clench_struct = dir(fullfile(dir_name, match));
 
 filenames = struct2cell(rand_clench_struct);
-filenames = append(filenames(2,:), '\', filenames(1,:));
+names =  filenames(1,:);
+filenames = append(filenames(2,:), '\', names);
 
 len = length(filenames);
 

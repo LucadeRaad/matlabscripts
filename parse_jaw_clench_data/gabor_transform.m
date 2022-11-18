@@ -68,15 +68,9 @@ for index = 1:length(matrix) / (window_size - overlap)
             ylabel('Power Density')
 
 
-            % the first bit of the fourier transform has noise at the
-            % beginning that we can discard when we want to use the data
-            % to make desisions.
+            % View the data in a format that shows 
 
             graphPSD = AlgorithmOutput(slice_indexes, freq_incr, graphPSD);
-
-%             dp = find(graphPSD, 1);
-% 
-%             graphPSD(dp) = 0;
 
             figure (1000 + index)
             plot(freq(Length), graphPSD(Length));
@@ -90,8 +84,6 @@ for index = 1:length(matrix) / (window_size - overlap)
         % Turn PSD into equally sized slices that are the average of that
         % slice
         PSD = AlgorithmOutput(slice_indexes, freq_incr, PSD);
-
-
 
         % The first slice is always large due to how the eeg collects data
         % so we can use it as a "constant"

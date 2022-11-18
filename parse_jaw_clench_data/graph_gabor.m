@@ -1,4 +1,4 @@
-function graph_gabor(raw_data, window_size, overlap, displayFFT)
+function graph_gabor(raw_data, window_size, overlap, displayFFT, filenames)
 %GRAPH_GABOR Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -21,7 +21,7 @@ for index = 1:length(raw_data)
 
     output(1:dp,:) = 0;
 
-    more_than_half_eeg_channels = 5;
+    more_than_half_eeg_channels = 4;
 
     if size(output, 2) > more_than_half_eeg_channels
         graph = [zeros(size([matrix, output + 1])), zeros(size(output,1),1)];    
@@ -58,7 +58,7 @@ for index = 1:length(raw_data)
 
     figure(figIndex);
     t = stackedplot(graph);
-    t.Title = sprintf('Figure %d unfiltered data', index);
+    t.Title = sprintf('Figure %d unfiltered data(%s)', index, filenames{index});
     t.XLabel = 'Data Points (300 samples per second)';
 
     if displayFFT

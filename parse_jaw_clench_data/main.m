@@ -11,7 +11,7 @@ close all;
 
 do_bandpass = true;
 
-raw_unordered_eeg = parse_eeg('Data_RandomClench', '*_raw.csv', do_bandpass);
+[raw_unordered_eeg, names_raw_eeg] = parse_eeg('Data_RandomClench', '*_raw.csv', do_bandpass);
 
 % filtered_ordered_eeg = parse_eeg('Data_Clench_RAW', '*_filtered.csv');
 
@@ -26,7 +26,9 @@ display_internal_fft = true;
 
 % You can add a '(1)' to the output from parse_eeg (filtered_unordered_eeg variable) if you only want to see 1
 % session, ie:
-% graph_gabor(filtered_unordered_eeg(1), window_size, window_overlap, display_internal_fft);
-graph_gabor(raw_unordered_eeg(1), window_size, window_overlap, display_internal_fft);
+% graph_gabor(filtered_unordered_eeg(1), window_size, window_overlap, display_internal_fft, names_raw_eeg);
+graph_gabor(raw_unordered_eeg(1), window_size, window_overlap, display_internal_fft, names_raw_eeg);
+
+% graph_gabor(raw_unordered_eeg, window_size, window_overlap, display_internal_fft, names_raw_eeg);
 
 
