@@ -79,7 +79,7 @@ for index = 1:length(matrix) / (window_size - overlap)
             ylabel('Power Density')
         end
 
-        %% Calculate mean/meadian/mode
+        %% Calculate mean/meadian/mode and then find a jaw clench
 
         % Turn PSD into equally sized slices that are the average of that
         % slice
@@ -91,14 +91,14 @@ for index = 1:length(matrix) / (window_size - overlap)
     
         % The end of the first section and now we take the rest into one
         % big chunk and see if they compare
-        second_index = round(slice_indexes(2) / freq_incr);
+        second_index = round(slice_indexes(3) / freq_incr);
         third_index = round(slice_indexes(end) / freq_incr);
 
-        low_change = sum(PSD(first_index : second_index));
+        low_change = trapz(PSD(first_index : second_index));
 
-        high_change = sum(PSD(second_index + 1 : third_index));
+        high_change = trapz(PSD(second_index + 1 : third_index));
 
-        alg_output = high_change > low_change;
+        alg_output = (high_change / low_change) >= 1.5;
 
         output(offset: offset + window_size, jindex) = alg_output;
     end
