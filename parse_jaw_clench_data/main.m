@@ -20,14 +20,14 @@ do_bandpass = true;
 % sliding window, record maybe the mode or slice the fft graph into pieces
 % and then recording the pieces
 
-window_size = 150;
-window_overlap = 75;
-display_internal_fft = false;
+window_size = 900;
+window_overlap = 0;
+display_internal_fft = true;
 
 % You can add a '(1)' to the output from parse_eeg (filtered_unordered_eeg variable) if you only want to see 1
 % session, ie:
 % graph_gabor(unordered_eeg(1), window_size, window_overlap, display_internal_fft, names_unordered_eeg);
-graph_gabor(ordered_eeg, window_size, window_overlap, display_internal_fft, names_ordered_eeg);
+graph_gabor(ordered_eeg(1), window_size, window_overlap, display_internal_fft, names_ordered_eeg);
 
 
 

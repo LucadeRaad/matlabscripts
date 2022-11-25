@@ -65,7 +65,7 @@ for index = 1:length(matrix) / (window_size - overlap)
             % post:
             % https://stackoverflow.com/questions/1523814/units-of-a-fourier-transform-fft-when-doing-spectral-analysis-of-a-signal
 
-            graphPSD = AlgorithmOutput(slice_indexes, freq_incr, graphPSD);
+            [graphPSD, slice_values] = AlgorithmOutput(slice_indexes, freq_incr, graphPSD);
 
             g = gradient(graphPSD);
             
@@ -128,10 +128,10 @@ for index = 1:length(matrix) / (window_size - overlap)
 % 
 %         alg_output = (high_change / low_change) >= 1.5;
 
-        goutput = gradient(graphPSD);
-        goutput(1:round(1 / freq_incr)) = 0;
+        goutput = gradient(slice_values);
+        % goutput(1:round(1 / freq_incr)) = 0;
 
-        alg_output = any(find(goutput(1:round(51 / freq_incr)) >= 150));
+        alg_output = any(find(goutput) >= 150);
 
         output(offset: offset + window_size, jindex) = alg_output;%alg_output;
     end
