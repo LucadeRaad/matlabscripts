@@ -20,8 +20,8 @@ do_bandpass = true;
 % sliding window, record maybe the mode or slice the fft graph into pieces
 % and then recording the pieces
 
-window_size = 300;
-window_overlap = 150;
+window_size = 150;
+window_overlap = 75;
 display_internal_fft = false;
 
 % You can add a '(1)' to the output from parse_eeg (filtered_unordered_eeg variable) if you only want to see 1
