@@ -37,7 +37,7 @@ for index = 1:length(raw_data)
 
         % F3F4 = output(:,1) & output(:,2);
 
-        alg_output = output(:,6) | output(:,7); % output(:,1) | output(:,5);% | output(:,6); %   |
+        alg_output = output(:,2) | output(:,4) | output(:,6) | output(:,7); % output(:,1) | output(:,5);% | output(:,6); %   |
         % F3-LE, F4-LE, 
 
         graph(:,end) = alg_output;

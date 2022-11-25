@@ -93,6 +93,13 @@ for index = 1:length(matrix) / (window_size - overlap)
 %         % slice
          [graphPSD, slice_values] = AlgorithmOutput(slice_indexes, freq_incr, PSD);
 
+         slice_values = slice_values(2:end);
+
+         [~, slice_min_index] = min(slice_values);
+
+         [~, slice_max_index] = max(slice_values);
+
+         alg_output = slice_max_index > slice_min_index;
 
          % We remove the first slice because its always very big no matter
          % what. This means its noise.
@@ -128,10 +135,10 @@ for index = 1:length(matrix) / (window_size - overlap)
 % 
 %         alg_output = (high_change / low_change) >= 1.5;
 
-        goutput = gradient(slice_values);
+        %goutput = gradient(slice_values);
         % goutput(1:round(1 / freq_incr)) = 0;
 
-        alg_output = any(find(goutput) >= 150);
+        %alg_output = any(find(goutput) >= 150);
 
         output(offset: offset + window_size, jindex) = alg_output;%alg_output;
     end
