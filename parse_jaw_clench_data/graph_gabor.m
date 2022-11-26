@@ -5,6 +5,16 @@ function graph_gabor(raw_data, window_size, overlap, displayFFT, filenames)
 assert(overlap < window_size, ...
     'You cannot overlap more than the size than the window! Perhaps swap your window_size/overlap variables?')
 
+if displayFFT
+    if window_size - overlap < 600
+        
+        window_size = 600;
+
+        overlap = 0;
+
+        disp("Changing window_size and overlap to 600 and 0 to make sure not too many windows are formed!")
+    end
+end
 
 for index = 1:length(raw_data)
     matrix = raw_data{index};
@@ -20,30 +30,23 @@ for index = 1:length(raw_data)
     dp = find(output, 1);
     output(1:dp,:) = 0;
 
-    more_than_half_eeg_channels = 4;
-
-    if size(output, 2) > more_than_half_eeg_channels
-        graph = [zeros(size([matrix, output + 1])), zeros(size(output,1),1)];    
-
-        % Channel 1: F3-LE
+    if displayFFT
+        graph = zeros(size([matrix, output + 1]));
+    else
+        graph = [zeros(size([matrix, output + 1])), zeros(size(output,1),1)];
+        
         % Channel 2: F4-LE
-        % Channel 5: Pz-LE
+        % Channel 4: C4-LE
         % Channel 6: P3-LE
+        % Channel 7: P4-LE
 
-        % These channels are the most correct. Therefore we weigh them the
-        % most. Individually they can be 50%-100% correct but are wrong as
-        % false negatives so we can "OR" them to remove as many false
-        % negatives
+        % These channels are the most correct. We OR them because they have
+        % many false negatives which result in partial correctness but
+        % combined they fill in each other's gaps.
 
-        % F3F4 = output(:,1) & output(:,2);
-
-        alg_output = output(:,2) | output(:,4) | output(:,6) | output(:,7); % output(:,1) | output(:,5);% | output(:,6); %   |
-        % F3-LE, F4-LE, 
+        alg_output = output(:,2) | output(:,4) | output(:,6) | output(:,7);
 
         graph(:,end) = alg_output;
-
-    else
-        graph = zeros(size([matrix, output + 1]));
     end
 
     % We will now take the data, and put it next to its channel eg. output

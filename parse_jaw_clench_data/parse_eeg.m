@@ -1,6 +1,6 @@
 function [data, names] = parse_eeg(dir_name, match, do_bandpass)
 %PARSE_EEG Takes a .csv from an eeg file and returns a matrix of the data
-%   Only records data, no artifacts or other data
+%   Only records data, no artifacts or other information
 
 rand_clench_struct = dir(fullfile(dir_name, match));
 

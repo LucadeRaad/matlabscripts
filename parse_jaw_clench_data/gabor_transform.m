@@ -14,11 +14,6 @@ Fs = 300;
 
 dt = 1/Fs;
 
-% The indexes for the slices that the FFT output is put into. Modifying
-% this variable can change the size of the windows that are seen on figures
-% 1000 + x.
-slice_indexes = [1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51];
-
 freq_incr = 1 / (dt * window_size);
 
 % Creates the vector of frequencies that is the x axis. Goes from lowest
@@ -65,20 +60,15 @@ for index = 1:length(matrix) / (window_size - overlap)
             % post:
             % https://stackoverflow.com/questions/1523814/units-of-a-fourier-transform-fft-when-doing-spectral-analysis-of-a-signal
 
-            [graphPSD, slice_values] = AlgorithmOutput(slice_indexes, freq_incr, graphPSD);
-
-            g = gradient(graphPSD);
-            
             figure (100 + index)
-            plot(freq(Length), g(Length));
+            plot(freq(Length), graphPSD(Length));
             title(sprintf('Figure %d Fast Fourier Transform', index))
             xlabel('Frequency (Hz)')
             ylabel('Power Density')
 
+            % The slice format makes it easier to see the trends in the FFT 
 
-            % View the data in a format that shows 
-
-            
+            graphPSD = Slice_FFT(freq_incr, graphPSD);
 
             figure (1000 + index)
             plot(freq(Length), graphPSD(Length));
@@ -86,61 +76,20 @@ for index = 1:length(matrix) / (window_size - overlap)
             xlabel('Frequency (Hz)')
             ylabel('Power Density')
         end
+        
+        %% Calculate jaw clench by finding the index of the max and min, if the min is before the max its a jaw clench
 
-        %% Calculate mean/meadian/mode and then find a jaw clench
+        % Turn PSD into equally sized slices that are the average of that
+        % slice
+        [~, slice_values] = Slice_FFT(freq_incr, PSD);
 
-%         % Turn PSD into equally sized slices that are the average of that
-%         % slice
-         [graphPSD, slice_values] = AlgorithmOutput(slice_indexes, freq_incr, PSD);
+        % First value is always noise!
+        slice_values = slice_values(2:end);
 
-         slice_values = slice_values(2:end);
+        [~, slice_min_index] = min(slice_values);
+        [~, slice_max_index] = max(slice_values);
 
-         [~, slice_min_index] = min(slice_values);
-
-         [~, slice_max_index] = max(slice_values);
-
-         alg_output = slice_max_index > slice_min_index;
-
-         % We remove the first slice because its always very big no matter
-         % what. This means its noise.
-         %slice_values = slice_values(2:end);
-
-         % Now we want to calculate how many slices' values are greater
-         % than half of the max slice value. To understand why this
-         % algorithm works, turn of FFT=True and view the FFT data put into
-         % the slices and you can see that when there is a jaw clench
-         % instead of each value decreasing on each subsequent slice(NOTE:
-         % this is just an overall trend, on non-jaw clench data put into
-         % slices there will sometimes be bigger than the previous one).
-         %slice_max = max(slice_values);
-
-         %slice_consensus = 7;
-
-         %alg_output = sum(slice_values > (slice_max / 5)) > slice_consensus;
-
-
-% 
-%         % The first slice is always large due to how the eeg collects data
-%         % so we can use it as a "constant"
-%         first_index = round(slice_indexes(1) / freq_incr);
-%     
-%         % The end of the first section and now we take the rest into one
-%         % big chunk and see if they compare
-%         second_index = round(slice_indexes(3) / freq_incr);
-%         third_index = round(slice_indexes(end) / freq_incr);
-% 
-%         low_change = trapz(PSD(first_index : second_index));
-% 
-%         high_change = trapz(PSD(second_index + 1 : third_index));
-% 
-%         alg_output = (high_change / low_change) >= 1.5;
-
-        %goutput = gradient(slice_values);
-        % goutput(1:round(1 / freq_incr)) = 0;
-
-        %alg_output = any(find(goutput) >= 150);
-
-        output(offset: offset + window_size, jindex) = alg_output;%alg_output;
+        output(offset: offset + window_size, jindex) = slice_max_index > slice_min_index;
     end
     
     offset = offset + (window_size - overlap);
@@ -152,27 +101,24 @@ end
 
 end
 
-% The code that turns the fft data into the slices that are defined earlier
-% in the function. Each slice's value is the mean of its range in the
-% matlab function, for example the slice(1:5) is simply mean(PSD(1:5).
-% Returns a matrix of the same size of the PSD for easy
-% plotting but also returns a matrix of the value of each slice which size
-% is how many slices there are.
-function [PSD, matrix] = AlgorithmOutput(slice_indexes, freq_incr, PSD)
-prev_index = slice_indexes(1);
+% Turns the FFT data into slices. The slice size is defined in the
+% function. Each slice's value is the mean of the slice's range in the
+% passed in FFT.
+function [PSD, matrix] = Slice_FFT(freq_incr, PSD)
+    slice_size = 5;
 
-matrix = zeros(length(slice_indexes) - 1, 1);
-
-for a = 2:length(slice_indexes)
-    arb_index_s = round(prev_index / freq_incr);
-    arb_index_e = round(slice_indexes(a) / freq_incr);
+    fft_size = 50;
     
-    slice_value = mean(PSD(arb_index_s : arb_index_e));
-
-    matrix(a - 1) = slice_value;
+    matrix = zeros(fft_size / slice_size, 1);
     
-    PSD(arb_index_s : arb_index_e) = slice_value;
+    for a = 0:slice_size:(fft_size - slice_size)
+        arb_index_start = round(a / freq_incr) + 1;
+        arb_index_end = round(a + slice_size / freq_incr) + 1;
+        
+        slice_value = mean(PSD(arb_index_start : arb_index_end));
     
-    prev_index = slice_indexes(a);
-end
+        matrix((a / slice_size) + 1) = slice_value;
+        
+        PSD(arb_index_start : arb_index_end) = slice_value;
+    end
 end
