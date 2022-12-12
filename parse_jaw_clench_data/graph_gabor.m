@@ -78,6 +78,8 @@ for index = 1:length(raw_data)
 
     if displayFFT
         t.DisplayLabels = ["Microvolts", "Algorithm Output"];
+
+        break
     else
         t.DisplayLabels = ["F3 - LE (Microvolts)", "F3 - LE Algorithm Output", ... 
                            "F4 - LE (Microvolts)", "F4 - LE Algorithm Output", ...
