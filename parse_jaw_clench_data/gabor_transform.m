@@ -9,6 +9,11 @@ output = zeros(size(matrix));
 
 offset = 1;
 
+% The indexes for the slices that the FFT output is put into. Modifying
+% this variable can change the size of the windows that are seen on figures
+% 1000 + x.
+slice_indexes = [1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51];
+
 % Sampling frequency as there is 300 data points per second
 Fs = 300;
 
@@ -68,7 +73,7 @@ for index = 1:length(matrix) / (window_size - overlap)
 
             % The slice format makes it easier to see the trends in the FFT 
 
-            graphPSD = Slice_FFT(freq_incr, graphPSD);
+            graphPSD = Slice_FFT(slice_indexes, freq_incr, graphPSD);
 
             figure (1000 + index)
             plot(freq(Length), graphPSD(Length));
@@ -81,7 +86,7 @@ for index = 1:length(matrix) / (window_size - overlap)
 
         % Turn PSD into equally sized slices that are the average of that
         % slice
-        [~, slice_values] = Slice_FFT(freq_incr, PSD);
+        [~, slice_values] = Slice_FFT(slice_indexes, freq_incr, PSD);
 
         % First value is always noise!
         slice_values = slice_values(2:end);
@@ -104,21 +109,21 @@ end
 % Turns the FFT data into slices. The slice size is defined in the
 % function. Each slice's value is the mean of the slice's range in the
 % passed in FFT.
-function [PSD, matrix] = Slice_FFT(freq_incr, PSD)
-    slice_size = 5;
+function [PSD, matrix] = Slice_FFT(slice_indexes, freq_incr, PSD)
+prev_index = slice_indexes(1);
 
-    fft_size = 50;
+matrix = zeros(length(slice_indexes) - 1, 1);
+
+for a = 2:length(slice_indexes)
+    arb_index_s = round(prev_index / freq_incr);
+    arb_index_e = round(slice_indexes(a) / freq_incr);
     
-    matrix = zeros(fft_size / slice_size, 1);
+    slice_value = mean(PSD(arb_index_s : arb_index_e));
+
+    matrix(a - 1) = slice_value;
     
-    for a = 0:slice_size:(fft_size - slice_size)
-        arb_index_start = round(a / freq_incr) + 1;
-        arb_index_end = round(a + slice_size / freq_incr) + 1;
-        
-        slice_value = mean(PSD(arb_index_start : arb_index_end));
+    PSD(arb_index_s : arb_index_e) = slice_value;
     
-        matrix((a / slice_size) + 1) = slice_value;
-        
-        PSD(arb_index_start : arb_index_end) = slice_value;
-    end
+    prev_index = slice_indexes(a);
+end
 end
