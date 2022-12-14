@@ -30,7 +30,7 @@ BANDPASS_RANGE = [1, 50];
 
 DATAPOINTS_PER_SEC = 300;
 
-DATABUFFER_SIZE = 900;
+DATABUFFER_SIZE = 10000;
 
 GABOR_WINDOW_SIZE = 300;
 
@@ -51,6 +51,7 @@ plotCounter = 0;
 
 % Initialize timeLog and plotCounter for real time plotting
 allData = zeros(DATABUFFER_SIZE, NUM_CHANNELS);
+displayData = zeros(DATABUFFER_SIZE, NUM_CHANNELS);
 timeLog = zeros(DATABUFFER_SIZE, 1);
 algOutput = zeros(DATABUFFER_SIZE, 1);
 
@@ -106,11 +107,17 @@ while notDone
                 dataCount = dataCount + 1;
 
                 allData(dataCount,:) = EEGdata;
+                displayData(dataCount,:) = EEGdata;
+
                 timeLog(dataCount,:) = Timestamp;
+
                 algOutput(dataCount,:) = 0;
             else
                 allData = circshift(allData, -1);
                 allData(dataCount,:) = EEGdata;
+
+                displayData = circshift(displayData, -1);
+                displayData(dataCount,:) = EEGdata;
 
                 timeLog = circshift(timeLog, -1);
                 timeLog(end) = Timestamp;
@@ -120,13 +127,13 @@ while notDone
             end
             
             if (gaborCount >= GABOR_WINDOW_SIZE)
-                gaborSlice = allData(end - (GABOR_WINDOW_SIZE) : end, :);
+                %gaborSlice = allData(end - (GABOR_WINDOW_SIZE) : end, :);
 
                 %gaborSlice = bandpass(gaborSlice, BANDPASS_RANGE, DATAPOINTS_PER_SEC);
 
-                gaborSlice = filter(bandpass_model, gaborSlice);
+                gaborSlice = filter(bandpass_model, allData(1:dataCount, :));
 
-                allData(end - (GABOR_WINDOW_SIZE) : end, :) = gaborSlice;
+                displayData(end - (GABOR_WINDOW_SIZE - 1) : end, :) = gaborSlice;
 
 
 
@@ -154,39 +161,13 @@ while notDone
                 % graphLog = bandpass(allData.', BANDPASS_RANGE, DATAPOINTS_PER_SEC);
 
                 if dataCount <= FIGURE_SIZE
-                    graphLog = allData(1 : dataCount, :);
+                    graphLog = displayData(1 : dataCount, :);
                     graphTime = timeLog(1 : dataCount);
                 else
-                    graphLog = [allData(dataCount - FIGURE_SIZE: dataCount, :), algOutput(dataCount - FIGURE_SIZE: dataCount)];
+                    graphLog = [displayData(dataCount - FIGURE_SIZE: dataCount, :), algOutput(dataCount - FIGURE_SIZE: dataCount)];
                     graphTime = timeLog(dataCount - FIGURE_SIZE: dataCount);
                 end
-                
-%                 fhat = fft(graphLog(end - (GABOR_WINDOW_SIZE - 1) : end, :)); GABOR_WINDOW_SIZE
-% 
-%                 PSD = fhat.*conj(fhat) / GABOR_WINDOW_SIZE;
-%                 
-%                 prev_index = SLICE_INDEXES(1);
-% 
-%                 sliceVals = zeros(length(SLICE_INDEXES) - 1, 7);
-% 
-%                 for a = 2:length(SLICE_INDEXES)
-%                     arb_index_s = round(prev_index / FREQ_INCR);
-%                     arb_index_e = round(SLICE_INDEXES(a) / FREQ_INCR);
-%                     
-%                     sliceVals(a - 1) = mean(PSD(arb_index_s : arb_index_e));
-%                     
-%                     prev_index = SLICE_INDEXES(a);
-%                 end
-% 
-%                 sliceVals = sliceVals(2:end);
-% 
-%                 [~, minIndex] = min(sliceVals);
-%                 [~, maxIndex] = max(sliceVals);
-% 
-%                 algOutput(end - (GABOR_WINDOW_SIZE - 1) : end) = maxIndex > minIndex;
-% 
-%                 graphLog = [graphLog, algOutput.'];
-
+  
                 plot(graphTime, graphLog)
 
                 xlim([graphTime(1) - 1 / DATAPOINTS_PER_SEC, graphTime(end) + 1 / DATAPOINTS_PER_SEC])
