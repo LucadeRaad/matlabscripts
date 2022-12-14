@@ -129,11 +129,11 @@ while notDone
             if (gaborCount >= GABOR_WINDOW_SIZE)
                 %gaborSlice = allData(end - (GABOR_WINDOW_SIZE) : end, :);
 
-                %gaborSlice = bandpass(gaborSlice, BANDPASS_RANGE, DATAPOINTS_PER_SEC);
+                gaborSlice = bandpass(allData(1:dataCount), BANDPASS_RANGE, DATAPOINTS_PER_SEC);
 
-                gaborSlice = filter(bandpass_model, allData(1:dataCount, :));
+                %gaborSlice = filter(bandpass_model, allData(dataCount - (GABOR_WINDOW_SIZE - 2):dataCount, :));
 
-                displayData(end - (GABOR_WINDOW_SIZE - 1) : end, :) = gaborSlice;
+                displayData(dataCount - (GABOR_WINDOW_SIZE - 2):dataCount, :) = gaborSlice(dataCount - (GABOR_WINDOW_SIZE - 2):dataCount, :);
 
 
 
