@@ -1,4 +1,4 @@
-function [data, names] = parse_eeg(dir_name, match, do_bandpass)
+function [data, names, models] = parse_eeg(dir_name, match, do_bandpass)
 %PARSE_EEG Takes a .csv from an eeg file and returns a matrix of the data
 %   Only records data, no artifacts or other information
 
@@ -16,6 +16,8 @@ assert(len ~= 0, ...
 
 data = {len};
 
+models = {len};
+
 for index = 1:len
     data{index} = readmatrix(filenames{index});
 
@@ -24,7 +26,7 @@ for index = 1:len
     data{index}(:,1) = [];
 
     if do_bandpass
-        data{index} = bandpass(data{index}, [1, 50], 300);
+        [data{index}, models{index}] = bandpass(data{index}, [1, 50], 300);
     end
 end
 
