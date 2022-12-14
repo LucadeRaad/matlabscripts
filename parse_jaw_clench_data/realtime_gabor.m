@@ -2,6 +2,8 @@ clc;
 clear;
 close all;
 
+load("bandpass_model.mat", "bandpass_model");
+
 %% Initialize the TCP/IP
 t = tcpip('localhost', 8844);
 fclose(t); %just in case it was open from a previous iteration
@@ -11,15 +13,46 @@ headerStart = [64, 65, 66, 67, 68]; % All DSI packet headers begin with '@ABCD',
 cutoffcounter = 0;
 notDone = 1;
 
-% Initialize timeLog and plotCounter for real time plotting
-timeLog = zeros(1,100);
-plotCounter = 0;
+graph_write_delay = 36;
 
 %% A bunch of constants
 % These constants are set up so that a future user can change them for
 % their needs.
 MAX_PACKETS_DROPPED = 1500;
 
+FIGURE_SIZE = 600;
+
+FIGURE_Y_MAX_LIM = 1000;
+
+FIGURE_Y_MIN_LIM = -1000;
+
+BANDPASS_RANGE = [1, 50];
+
+DATAPOINTS_PER_SEC = 300;
+
+DATABUFFER_SIZE = 900;
+
+GABOR_WINDOW_SIZE = 300;
+
+NUM_CHANNELS = 4;
+
+% The indexes for the slices that the FFT output is put into.
+SLICE_INDEXES = [1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51];
+
+Fs = 300;
+
+dt = 1/Fs;
+
+FREQ_INCR = 1 / (dt * GABOR_WINDOW_SIZE);
+
+gaborCount = 0;
+dataCount = 0;
+plotCounter = 0;
+
+% Initialize timeLog and plotCounter for real time plotting
+allData = zeros(DATABUFFER_SIZE, NUM_CHANNELS);
+timeLog = zeros(DATABUFFER_SIZE, 1);
+algOutput = zeros(DATABUFFER_SIZE, 1);
 
 pause
 
@@ -55,33 +88,116 @@ while notDone
             Timestamp = swapbytes(typecast(data(13:16),'single'));
             EEGdata = swapbytes(typecast(data(24:lengthdata),'single'));
 
+            EEGdata(8:end) = [];
+
+            % We discard EEG channels that are unused in the algorithm.
+            % we only use:
+            % Channel 2: F4-LE
+            % Channel 4: C4-LE
+            % Channel 6: P3-LE
+            % Channel 7: P4-LE
+
+            EEGdata(5) = [];
+            EEGdata(3) = [];
+            EEGdata(1) = [];
+
             %% Plot data in realtime
-            % Initialize time and signal logs based on packet size. This
-            % can vary based on headset and number of channels
-            % available.
-            if all(timeLog(:) == 0)
-               timeLog = Timestamp;
-               signalLog = EEGdata';
+            if dataCount <= DATABUFFER_SIZE
+                dataCount = dataCount + 1;
+
+                allData(dataCount,:) = EEGdata;
+                timeLog(dataCount,:) = Timestamp;
+                algOutput(dataCount,:) = 0;
             else
-               timeLog = [timeLog, Timestamp];
-               signalLog = [signalLog, EEGdata'];
+                allData = circshift(allData, -1);
+                allData(dataCount,:) = EEGdata;
+
+                timeLog = circshift(timeLog, -1);
+                timeLog(end) = Timestamp;
+
+                algOutput = circshift(algOutput, -1);
+                algOutput(end) = 0;
             end
             
-            % Limit the size of the logs to 100 data points for plotting
-            if length(timeLog) >= 100
-               timeLog = timeLog(end-99:end);
-               signalLog = signalLog(:,end-99:end);
-            end
-            
-            if plotCounter >= 36 % MATLAB waits a specified number of cycles before plotting the data to increase performance.
-               plotCounter = 0;
-               plot(timeLog,signalLog(1:size(signalLog,1),:))
-               xlim([timeLog(1)-1/300, timeLog(end)+1/300])
-               ylim([-1000, 1000])
-               drawnow;
+            if (gaborCount >= GABOR_WINDOW_SIZE)
+                gaborSlice = allData(end - (GABOR_WINDOW_SIZE) : end, :);
+
+                %gaborSlice = bandpass(gaborSlice, BANDPASS_RANGE, DATAPOINTS_PER_SEC);
+
+                gaborSlice = filter(bandpass_model, gaborSlice);
+
+                allData(end - (GABOR_WINDOW_SIZE) : end, :) = gaborSlice;
+
+
+
+%                 sliceVals = zeros(length(SLICE_INDEXES) - 1, NUM_CHANNELS);
+% 
+%                 fhat = fft(d(iter : iter + (GABOR_WINDOW_SIZE - 1), :), [], 1);
+%                 PSD = fhat.*conj(fhat)/GABOR_WINDOW_SIZE;
+% 
+%                 for k = 5:SLICE_STEP:(SLICE_STEP * (SLICE_COUNT))
+%                     s_ind = floor(k / freq_incr);
+%                     e_ind = floor((k + SLICE_STEP) / freq_incr) + 1;
+%                 
+%                     sliceVals(k / SLICE_STEP, :) = mean(PSD(s_ind : e_ind, :));
+%                 end
+%        
+%                 [~, mininds] = min(sliceVals, [], 1);
+%                 [~, maxinds] = max(sliceVals, [], 1);
+
+                gaborCount = 0;
             else
-               plotCounter = plotCounter + 1;
+                gaborCount = gaborCount + 1;
+            end
+
+            if plotCounter >= graph_write_delay % MATLAB waits a specified number of cycles before plotting the data to increase performance.
+                % graphLog = bandpass(allData.', BANDPASS_RANGE, DATAPOINTS_PER_SEC);
+
+                if dataCount <= FIGURE_SIZE
+                    graphLog = allData(1 : dataCount, :);
+                    graphTime = timeLog(1 : dataCount);
+                else
+                    graphLog = [allData(dataCount - FIGURE_SIZE: dataCount, :), algOutput(dataCount - FIGURE_SIZE: dataCount)];
+                    graphTime = timeLog(dataCount - FIGURE_SIZE: dataCount);
+                end
                 
+%                 fhat = fft(graphLog(end - (GABOR_WINDOW_SIZE - 1) : end, :)); GABOR_WINDOW_SIZE
+% 
+%                 PSD = fhat.*conj(fhat) / GABOR_WINDOW_SIZE;
+%                 
+%                 prev_index = SLICE_INDEXES(1);
+% 
+%                 sliceVals = zeros(length(SLICE_INDEXES) - 1, 7);
+% 
+%                 for a = 2:length(SLICE_INDEXES)
+%                     arb_index_s = round(prev_index / FREQ_INCR);
+%                     arb_index_e = round(SLICE_INDEXES(a) / FREQ_INCR);
+%                     
+%                     sliceVals(a - 1) = mean(PSD(arb_index_s : arb_index_e));
+%                     
+%                     prev_index = SLICE_INDEXES(a);
+%                 end
+% 
+%                 sliceVals = sliceVals(2:end);
+% 
+%                 [~, minIndex] = min(sliceVals);
+%                 [~, maxIndex] = max(sliceVals);
+% 
+%                 algOutput(end - (GABOR_WINDOW_SIZE - 1) : end) = maxIndex > minIndex;
+% 
+%                 graphLog = [graphLog, algOutput.'];
+
+                plot(graphTime, graphLog)
+
+                xlim([graphTime(1) - 1 / DATAPOINTS_PER_SEC, graphTime(end) + 1 / DATAPOINTS_PER_SEC])
+
+                %ylim([FIGURE_Y_MIN_LIM, FIGURE_Y_MAX_LIM])
+                
+                drawnow;
+
+                plotCounter = 0;
+            else
+                plotCounter = plotCounter + 1;
             end
         end
     end
