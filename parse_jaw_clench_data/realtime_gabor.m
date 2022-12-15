@@ -2,8 +2,6 @@ clc;
 clear;
 close all;
 
-load("bandpass_model.mat", "bandpass_model");
-
 %% Initialize the TCP/IP
 t = tcpip('localhost', 8844);
 fclose(t); %just in case it was open from a previous iteration
@@ -20,30 +18,39 @@ graph_write_delay = 36;
 % their needs.
 MAX_PACKETS_DROPPED = 1500;
 
-FIGURE_SIZE = 600;
+FIGURE_SIZE = 900;
 
 FIGURE_Y_MAX_LIM = 1000;
+FIGURE_Y_MAX_MID_LIM = FIGURE_Y_MAX_LIM / 2;
 
-FIGURE_Y_MIN_LIM = -1000;
+FIGURE_Y_MIN_LIM = -1 * FIGURE_Y_MAX_LIM;
+FIGURE_Y_MIN_MID_LIM = FIGURE_Y_MIN_LIM / 2;
 
-BANDPASS_RANGE = [1, 50];
+%BANDPASS_RANGE = [1, 50];
+
+SLICE_COUNT = 9;
+
+SLICE_STEP = 5;
 
 DATAPOINTS_PER_SEC = 300;
 
-DATABUFFER_SIZE = 10000;
+BANDPASS_RANGE = [1, 50];
+
+DATABUFFER_SIZE = 1201;
 
 GABOR_WINDOW_SIZE = 300;
 
 NUM_CHANNELS = 4;
-
-% The indexes for the slices that the FFT output is put into.
-SLICE_INDEXES = [1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51];
 
 Fs = 300;
 
 dt = 1/Fs;
 
 FREQ_INCR = 1 / (dt * GABOR_WINDOW_SIZE);
+
+% https://stackoverflow.com/questions/31325491/how-to-design-a-zero-phase-bandpass-filter-for-1-to-20-hz-in-matlab
+B_PASS = fir1(400,[1,50]/(Fs/2));
+A_PASS = 1;
 
 gaborCount = 0;
 dataCount = 0;
@@ -55,7 +62,9 @@ displayData = zeros(DATABUFFER_SIZE, NUM_CHANNELS);
 timeLog = zeros(DATABUFFER_SIZE, 1);
 algOutput = zeros(DATABUFFER_SIZE, 1);
 
-pause
+sliceVals = zeros(SLICE_COUNT, NUM_CHANNELS);
+
+%pause
 
 while notDone
     %% Termination clause
@@ -127,30 +136,35 @@ while notDone
             end
             
             if (gaborCount >= GABOR_WINDOW_SIZE)
-                %gaborSlice = allData(end - (GABOR_WINDOW_SIZE) : end, :);
+                gaborSlice = filtfilt(B_PASS, A_PASS, allData);%bandpass(allData, BANDPASS_RANGE, DATAPOINTS_PER_SEC);
 
-                gaborSlice = bandpass(allData(1:dataCount), BANDPASS_RANGE, DATAPOINTS_PER_SEC);
+                displayData = gaborSlice;
 
-                %gaborSlice = filter(bandpass_model, allData(dataCount - (GABOR_WINDOW_SIZE - 2):dataCount, :));
+                gaborSlice = gaborSlice(dataCount - GABOR_WINDOW_SIZE:dataCount, :);
 
-                displayData(dataCount - (GABOR_WINDOW_SIZE - 2):dataCount, :) = gaborSlice(dataCount - (GABOR_WINDOW_SIZE - 2):dataCount, :);
+                fhat = fft(gaborSlice, [], 1);
+                PSD = fhat.*conj(fhat) / GABOR_WINDOW_SIZE;
 
+                for k = 5:SLICE_STEP:(SLICE_STEP * (SLICE_COUNT))
+                    s_ind = floor(k / FREQ_INCR);
+                    e_ind = floor((k + SLICE_STEP) / FREQ_INCR) + 1;
+                
+                    sliceVals(k / SLICE_STEP, :) = mean(PSD(s_ind : e_ind, :));
+                end
+       
+                [~, mininds] = min(sliceVals, [], 1);
+                [~, maxinds] = max(sliceVals, [], 1);
 
+                allChannels = maxinds > mininds;
 
-%                 sliceVals = zeros(length(SLICE_INDEXES) - 1, NUM_CHANNELS);
-% 
-%                 fhat = fft(d(iter : iter + (GABOR_WINDOW_SIZE - 1), :), [], 1);
-%                 PSD = fhat.*conj(fhat)/GABOR_WINDOW_SIZE;
-% 
-%                 for k = 5:SLICE_STEP:(SLICE_STEP * (SLICE_COUNT))
-%                     s_ind = floor(k / freq_incr);
-%                     e_ind = floor((k + SLICE_STEP) / freq_incr) + 1;
-%                 
-%                     sliceVals(k / SLICE_STEP, :) = mean(PSD(s_ind : e_ind, :));
-%                 end
-%        
-%                 [~, mininds] = min(sliceVals, [], 1);
-%                 [~, maxinds] = max(sliceVals, [], 1);
+                isClench = allChannels(1) | allChannels(2) | allChannels(3) | allChannels(4);
+
+                if isClench
+                    algOutput(dataCount - GABOR_WINDOW_SIZE:dataCount, :) = FIGURE_Y_MAX_MID_LIM;
+                else
+                    algOutput(dataCount - GABOR_WINDOW_SIZE:dataCount, :) = FIGURE_Y_MIN_MID_LIM;
+                end
+                
 
                 gaborCount = 0;
             else
@@ -158,21 +172,23 @@ while notDone
             end
 
             if plotCounter >= graph_write_delay % MATLAB waits a specified number of cycles before plotting the data to increase performance.
-                % graphLog = bandpass(allData.', BANDPASS_RANGE, DATAPOINTS_PER_SEC);
-
                 if dataCount <= FIGURE_SIZE
-                    graphLog = displayData(1 : dataCount, :);
-                    graphTime = timeLog(1 : dataCount);
+                    smallSlice = 1 : dataCount;
+
+                    graphLog = [displayData(smallSlice, :), algOutput(smallSlice, :)];
+                    graphTime = timeLog(smallSlice);
                 else
-                    graphLog = [displayData(dataCount - FIGURE_SIZE: dataCount, :), algOutput(dataCount - FIGURE_SIZE: dataCount)];
-                    graphTime = timeLog(dataCount - FIGURE_SIZE: dataCount);
+                    bigSlice = dataCount - FIGURE_SIZE;
+
+                    graphLog = [displayData(bigSlice: dataCount, :), algOutput(bigSlice: dataCount)];
+                    graphTime = timeLog(bigSlice: dataCount);
                 end
   
                 plot(graphTime, graphLog)
 
                 xlim([graphTime(1) - 1 / DATAPOINTS_PER_SEC, graphTime(end) + 1 / DATAPOINTS_PER_SEC])
 
-                %ylim([FIGURE_Y_MIN_LIM, FIGURE_Y_MAX_LIM])
+                ylim([FIGURE_Y_MIN_LIM, FIGURE_Y_MAX_LIM])
                 
                 drawnow;
 
