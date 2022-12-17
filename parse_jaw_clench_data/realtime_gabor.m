@@ -54,7 +54,7 @@ FREQ_INCR = 1 / (dt * GABOR_WINDOW_SIZE);
 
 % https://stackoverflow.com/questions/31325491/how-to-design-a-zero-phase-bandpass-filter-for-1-to-20-hz-in-matlab
 % Changed to be a 1-50 bandpass
-B_PASS = fir1(400, [1,50] / (Fs / 2));
+B_PASS = fir1(400, [1, 50] / (Fs / 2));
 A_PASS = 1;
 
 gaborCount = 0;
@@ -72,18 +72,18 @@ sliceVals = zeros(SLICE_COUNT, NUM_CHANNELS);
 
 %% Figure Initialization
 
+% https://www.mathworks.com/matlabcentral/answers/338733-how-to-stop-legend-from-adding-data1-data2-when-additional-data-is-plotted
+set(0, 'DefaultLegendAutoUpdate', 'off')
+
 title('Realtime EEG Processing','HandleVisibility','off');
 ylabel('Microvolts','HandleVisibility','off');
 xlabel('Data Points (300 samples per second)','HandleVisibility','off');
 
+%legend('F4-LE', 'C4-LE', 'P3-LE', 'p4-LE', 'Algorithm Output', 'Location', 'northwest', 'AutoUpdate', 'off');
+
 hold on
 
 ylim([FIGURE_Y_MIN_LIM, FIGURE_Y_MAX_LIM])
-
-% https://www.mathworks.com/matlabcentral/answers/338733-how-to-stop-legend-from-adding-data1-data2-when-additional-data-is-plotted
-set(0, 'DefaultLegendAutoUpdate', 'off')
-
-legend('F4-LE', 'C4-LE', 'P3-LE', 'p4-LE', 'Algorithm Output', 'Location', 'northwest');
 
 notDone = 1;
 
@@ -213,14 +213,10 @@ while notDone
 
                 plot(graphTime, graphLog);
 
-                legend show
+                %legend show
 
                 xlim([graphTime(1) - 1 / DATAPOINTS_PER_SEC, graphTime(end) + 1 / DATAPOINTS_PER_SEC])
 
-                %legend('F4-LE', 'C4-LE', 'P3-LE', 'F4-LE', 'Algorithm Output')
-
-                
-                
                 drawnow;
 
                 plotCounter = 0;
